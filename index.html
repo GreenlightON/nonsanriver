@@ -1,0 +1,2993 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>논산천 생태도감</title>
+<style>
+  /* 시스템 폰트 폴백 - 외부 의존 없음 */
+  
+  
+  :root {    --water: #4a90d9;
+    --water-dark: #1e5f8e;
+    --water-light: #87ceeb;
+    --grass: #5a8c3c;
+    --grass-light: #7ab648;
+    --sky: #c8e6f5;
+    --sky-top: #90c8e8;
+    --earth: #8b6340;
+    --earth-light: #c8985a;
+    --gold: #f5c842;
+    --green-zone: #4caf50;
+    --red-bar: #e53935;
+    --text-dark: #1a2e1a;
+    --text-light: #f0efe6;
+    --panel-bg: rgba(255,251,230,0.96);
+    --shadow: rgba(0,0,0,0.35);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+
+  body {
+    font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', sans-serif;
+    background: #1a2e1a;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #gameContainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 1024px;
+    max-height: 768px;
+    overflow: hidden;
+  }
+
+  /* ===== SCREENS ===== */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: none;
+  }
+  .screen.active { display: block; }
+
+  /* ===== START SCREEN ===== */
+  #startScreen {
+    background: linear-gradient(180deg, #6fb3d3 0%, #87ceeb 35%, #5a9e5e 60%, #4a8040 70%, #3a6030 80%, #8b6340 90%, #a07850 100%);
+    overflow: hidden;
+  }
+
+  /* Sky elements */
+  .cloud {
+    position: absolute;
+    background: rgba(255,255,255,0.85);
+    border-radius: 50px;
+    box-shadow: 0 2px 8px rgba(255,255,255,0.4);
+  }
+  .cloud::before, .cloud::after {
+    content: '';
+    position: absolute;
+    background: inherit;
+    border-radius: 50%;
+  }
+
+  /* River scenery */
+  #riverScene {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60%;
+  }
+
+  .mountain {
+    position: absolute;
+    bottom: 40%;
+    border-left: solid transparent;
+    border-right: solid transparent;
+    border-bottom: solid #5a8c4a;
+  }
+
+  .riverWater {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 45%;
+    background: linear-gradient(180deg, #5aabe8 0%, #3a80c0 40%, #2060a0 100%);
+    overflow: hidden;
+  }
+
+  .riverWater::before {
+    content: '';
+    position: absolute;
+    top: 8px; left: -20px; right: -20px; height: 18px;
+    background: repeating-linear-gradient(90deg,
+      transparent 0%, transparent 60px,
+      rgba(255,255,255,0.15) 60px, rgba(255,255,255,0.15) 80px,
+      transparent 80px
+    );
+    animation: riverFlow 4s linear infinite;
+  }
+
+  @keyframes riverFlow {
+    from { transform: translateX(0); }
+    to { transform: translateX(80px); }
+  }
+
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.3);
+    animation: rippleOut 3s ease-out infinite;
+  }
+
+  @keyframes rippleOut {
+    0% { transform: scale(0); opacity: 0.6; }
+    100% { transform: scale(3); opacity: 0; }
+  }
+
+  .riverBank {
+    position: absolute;
+    bottom: 43%;
+    left: 0; right: 0;
+    height: 20%;
+    background: linear-gradient(180deg, #6aa040 0%, #5a8c3c 40%, #4a7030 100%);
+    border-radius: 0 0 0 0;
+  }
+
+  .tree {
+    position: absolute;
+    bottom: 0;
+  }
+  .tree-trunk {
+    width: 12px;
+    height: 40px;
+    background: #6b4423;
+    margin: 0 auto;
+    border-radius: 3px;
+  }
+  .tree-top {
+    width: 0; height: 0;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-bottom: 55px solid #4a8c35;
+    position: relative;
+    left: -19px;
+    top: -8px;
+  }
+
+  /* Title panel */
+  #titlePanel {
+    position: absolute;
+    top: 12%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,251,225,0.95);
+    border: 3px solid #8b6340;
+    border-radius: 12px;
+    padding: 20px 40px 22px;
+    text-align: center;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.8);
+    z-index: 10;
+    min-width: 320px;
+  }
+
+  #titlePanel .subtitle {
+    font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', sans-serif;
+    font-size: 12px;
+    color: #8b6340;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  #titlePanel h1 {
+    font-family: 'Georgia', 'Batang', '바탕', serif;
+    font-size: 36px;
+    font-weight: 800;
+    color: #1a3a1a;
+    letter-spacing: 6px;
+    line-height: 1.1;
+  }
+
+  #titlePanel .accent-line {
+    width: 60px;
+    height: 2px;
+    background: #8b6340;
+    margin: 10px auto 0;
+  }
+
+  /* Chapter buttons */
+  #chapterList {
+    position: absolute;
+    bottom: 12%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    z-index: 10;
+    align-items: center;
+  }
+
+  .chapterBtn {
+    background: rgba(255,251,225,0.95);
+    border: 2px solid #8b6340;
+    border-radius: 10px;
+    padding: 14px 50px;
+    font-family: 'Georgia', 'Batang', '바탕', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a3a1a;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    min-width: 280px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .chapterBtn:hover {
+    background: #f5c842;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  }
+
+  .chapterBtn:active { transform: translateY(0); }
+
+  .chapterBtn .ch-icon { font-size: 22px; }
+  .chapterBtn .ch-complete {
+    font-size: 11px;
+    background: #4caf50;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', sans-serif;
+    font-weight: 500;
+  }
+
+  /* Bird animation */
+  .bird {
+    position: absolute;
+    font-size: 20px;
+    animation: birdFly 12s linear infinite;
+    z-index: 5;
+  }
+
+  @keyframes birdFly {
+    0% { left: -5%; top: 15%; }
+    100% { left: 110%; top: 8%; }
+  }
+
+  /* ===== FISHING SCREEN ===== */
+  #fishingScreen {
+    background: #87ceeb;
+    overflow: hidden;
+  }
+
+  /* Sky */
+  #fishingSky {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 25%;
+    background: linear-gradient(180deg, #6fb3d3 0%, #a8d8f0 100%);
+  }
+
+  /* Grass bank */
+  #fishingBank {
+    position: absolute;
+    top: 22%;
+    left: 0; right: 0;
+    height: 18%;
+    background: linear-gradient(180deg, #7ab648 0%, #5a8c3c 60%, #4a7030 100%);
+    cursor: not-allowed;
+  }
+
+  #fishingBank::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0; height: 5px;
+    background: rgba(0,0,0,0.1);
+  }
+
+  /* Grass tufts */
+  .grass-tuft {
+    position: absolute;
+    bottom: 0;
+    width: 12px;
+    height: 20px;
+    background: #4a8030;
+    clip-path: polygon(50% 0%, 20% 100%, 80% 100%);
+  }
+
+  /* Water */
+  #fishingWater {
+    position: absolute;
+    top: 38%;
+    left: 0; right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, #4a9ed6 0%, #2a72a8 35%, #1a5585 100%);
+    cursor: crosshair;
+    overflow: hidden;
+  }
+
+  .waterShimmer {
+    position: absolute;
+    top: 10px; left: 0; right: 0; height: 30px;
+    background: repeating-linear-gradient(90deg,
+      transparent 0%, transparent 50px,
+      rgba(255,255,255,0.12) 50px, rgba(255,255,255,0.12) 70px
+    );
+    animation: waterShimmerAnim 3s linear infinite;
+  }
+
+  @keyframes waterShimmerAnim {
+    from { transform: translateX(0); }
+    to { transform: translateX(70px); }
+  }
+
+  /* Rod */
+  /* ===== FISHING ROD (SVG) ===== */
+  #fishingRodWrap {
+    position: absolute;
+    top: 24%;
+    left: 5%;
+    z-index: 16;
+    pointer-events: none;
+    width: 180px;
+    height: 220px;
+    transform-origin: bottom left;
+  }
+
+  #rodSvg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  /* 캐스팅 모션 */
+  @keyframes castWindup {
+    0%   { transform: rotate(0deg); }
+    40%  { transform: rotate(35deg); }   /* 뒤로 젖히기 */
+    100% { transform: rotate(0deg); }
+  }
+
+  @keyframes castThrow {
+    0%   { transform: rotate(0deg); }
+    30%  { transform: rotate(35deg); }   /* 뒤로 */
+    60%  { transform: rotate(-45deg); }  /* 앞으로 휙 */
+    80%  { transform: rotate(-20deg); }  /* 튕김 */
+    100% { transform: rotate(-10deg); }  /* 캐스팅 후 자세 */
+  }
+
+  @keyframes castReturn {
+    0%   { transform: rotate(-10deg); }
+    100% { transform: rotate(0deg); }
+  }
+
+  #fishingRodWrap.casting {
+    animation: castThrow 0.55s cubic-bezier(0.25,0.46,0.45,0.94) forwards;
+  }
+
+  #fishingRodWrap.returning {
+    animation: castReturn 0.4s ease-out forwards;
+  }
+
+  /* Float/bobber */
+  #bobber {
+    position: absolute;
+    z-index: 14;
+    display: none;
+    pointer-events: none;
+  }
+
+  #bobberTop {
+    width: 10px;
+    height: 16px;
+    background: #e53935;
+    border-radius: 50% 50% 10% 10%;
+    margin: 0 auto;
+  }
+
+  #bobberBottom {
+    width: 10px;
+    height: 12px;
+    background: white;
+    border-radius: 10% 10% 50% 50%;
+    margin: 0 auto;
+    border-bottom: 2px solid #ccc;
+  }
+
+  #bobberLine {
+    position: absolute;
+    width: 1px;
+    background: rgba(200,200,200,0.7);
+    top: 0;
+    left: 50%;
+    transform-origin: top;
+  }
+
+  /* Fish shadow */
+  #fishShadow {
+    position: absolute;
+    z-index: 13;
+    display: none;
+    pointer-events: none;
+    filter: blur(3px) brightness(0.3);
+    opacity: 0.6;
+    font-size: 40px;
+  }
+
+  /* 잡은 물고기 카운터 */
+  #catchCounter {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,251,225,0.92);
+    border: 2px solid #8b6340;
+    border-radius: 20px;
+    padding: 5px 16px;
+    font-family: 'Georgia', 'Batang', '바탕', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a3a1a;
+    z-index: 30;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    white-space: nowrap;
+  }
+
+  /* 가짜미끼 해금 알림 */
+  #fakeBaitAlert {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    z-index: 500;
+    background: linear-gradient(135deg, #ff6b35, #f7c948, #ff6b35);
+    background-size: 200% 200%;
+    animation: feverGradient 1s ease infinite;
+    border: 3px solid #fff;
+    border-radius: 16px;
+    padding: 20px 36px;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(255,107,53,0.8);
+    pointer-events: none;
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  #fakeBaitAlert.show { transform: translate(-50%, -50%) scale(1); }
+  #fakeBaitAlert h3 {
+    font-family: 'Georgia', serif;
+    font-size: 22px;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  #fakeBaitAlert p {
+    font-size: 12px;
+    color: rgba(255,255,255,0.9);
+    font-family: 'Apple SD Gothic Neo', sans-serif;
+  }
+
+  /* 피버타임 화면 오버레이 */
+  #feverOverlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+    display: none;
+    border: 4px solid transparent;
+    border-radius: 0;
+    animation: feverBorder 0.5s ease-in-out infinite;
+  }
+  #feverOverlay.active { display: block; }
+
+  @keyframes feverBorder {
+    0%, 100% { box-shadow: inset 0 0 30px rgba(255,107,53,0.4), inset 0 0 60px rgba(247,201,72,0.2); }
+    50% { box-shadow: inset 0 0 50px rgba(255,107,53,0.7), inset 0 0 80px rgba(247,201,72,0.4); }
+  }
+
+  @keyframes feverGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* 가짜미끼 버튼 - 잠금 상태 */
+  #bait2.locked-bait {
+    opacity: 0.4;
+    filter: grayscale(80%);
+    cursor: not-allowed;
+    position: relative;
+  }
+
+  /* 가짜미끼 버튼 - 해금 상태 */
+  #bait2.fever-bait {
+    border-color: #ff6b35;
+    background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+    box-shadow: 0 0 12px rgba(255,107,53,0.6), 0 0 0 2px #ff6b35;
+    animation: feverBtnPulse 0.8s ease-in-out infinite;
+    position: relative;
+  }
+
+  @keyframes feverBtnPulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(255,107,53,0.5), 0 0 0 2px #ff6b35; }
+    50% { box-shadow: 0 0 20px rgba(255,107,53,0.9), 0 0 0 3px #ff6b35; }
+  }
+
+  /* 가짜미끼 해금 카운터 표시 */
+  #fakeBaitProgress {
+    font-size: 8px;
+    color: #888;
+    font-family: 'Apple SD Gothic Neo', sans-serif;
+    margin-top: 1px;
+  }
+
+  /* Bait selector */
+  #baitSelector {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,251,225,0.95);
+    border: 2px solid #8b6340;
+    border-radius: 12px;
+    padding: 10px 20px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    z-index: 30;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+
+  .baitLabel {
+    font-family: 'Georgia', 'Batang', '바탕', serif;
+    font-size: 13px;
+    color: #5a3010;
+    font-weight: 700;
+    margin-right: 4px;
+  }
+
+  .baitBtn {
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    border: 2px solid #c8985a;
+    background: #fff8e8;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    transition: all 0.15s;
+    gap: 2px;
+  }
+
+  .baitBtn span.bait-name {
+    font-size: 9px;
+    color: #5a3010;
+    font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', sans-serif;
+  }
+
+  .baitBtn:hover { background: #ffeaa0; transform: scale(1.05); }
+  .baitBtn.selected {
+    border-color: #e53935;
+    background: #fff0c0;
+    box-shadow: 0 0 0 2px #e53935;
+    transform: scale(1.08);
+  }
+  .baitBtn.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    filter: grayscale(60%);
+  }
+  .baitBtn.disabled:hover { background: #fff8e8; transform: none; }
+
+  /* Timing bar */
+  #timingBar {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    z-index: 50;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  #timingLabel {
+    font-family: 'Georgia', 'Batang', '바탕', serif;
+    font-size: 15px;
+    color: #fff;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+    letter-spacing: 2px;
+  }
+
+  #timingTrack {
+    width: 320px;
+    height: 28px;
+    background: var(--gold);
+    border-radius: 14px;
+    border: 3px solid #8b6340;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.4);
+  }
+
+  #greenZone {
+    position: absolute;
+    top: 0; bottom: 0;
+    background: #4caf50;
+    border-radius: 0;
+  }
+
+  #redMarker {
+    position: absolute;
+    top: -2px; bottom: -2px;
+    width: 5px;
+    background: #e53935;
+    border-radius: 2px;
+    box-shadow: 0 0 6px rgba(229,57,53,0.8);
+  }
+
+  /* Tap hint */
+  #tapHint {
+    font-family: 'Georgia', 'Batang', '바탕', serif;
+    font-size: 13px;
+    color: rgba(255,255,255,0.9);
+    text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+    animation: pulse 0.8s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Bite alert */
+  #biteAlert {
+    position: absolute;
+    top: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    z-index: 50;
+    background: rgba(229,57,53,0.9);
+    color: white;
+    font-family: 'Georgia', 'Batang', '바탕', serif;
+    font-size: 20px;
+    font-weight: 700;
+    padding: 10px 28px;
+    border-radius: 30px;
+    letter-spacing: 3px;
+    box-shadow: 0 4px 18px rgba(229,57,53,0.5);
+    animation: biteAnim 0.3s ease-out;
+  }
+
+  @keyframes biteAnim {
+    0% { transform: translateX(-50%) scale(0.5); }
+    80% { transform: translateX(-50%) scale(1.1); }
+    100% { transform: translateX(-50%) scale(1); }
+  }
+
+  /* Status message */
+  #statusMsg {
+    position: absolute;
+    top: 55px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Georgia', 'Batang', '바탕', serif;
+    font-size: 15px;
+    color: white;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+    text-align: center;
+    z-index: 30;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  /* Back button */
+  .backBtn {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(255,251,225,0.92);
+    border: 2px solid #8b6340;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-family: 'Georgia', 'Batang', '바탕', serif;
+    font-size: 13px;
+    color: #1a3a1a;
+    cursor: pointer;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    transition: all 0.15s;
+  }
+
+  .backBtn:hover { background: #f5c842; }
+
+  /* Pokedex button */
+  #docanBtn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255,251,225,0.92);
+    border: 2px solid #8b6340;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-family: 'Georgia', 'Batang', '바탕', serif;
+    font-size: 13px;
+    color: #1a3a1a;
+    cursor: pointer;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    transition: all 0.15s;
+  }
+
+  #docanBtn:hover { background: #f5c842; }
+
+  #docanCount {
+    background: #e53935;
+    color: white;
+    border-radius: 12px;
+    padding: 1px 7px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  /* ===== DOCAM OVERLAY ===== */
+  #docanOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #docanOverlay.active { display: flex; }
+
+  #docanBook {
+    background: #fdf6e3;
+    border: 3px solid #8b6340;
+    border-radius: 14px;
+    width: 90%;
+    max-width: 680px;
+    max-height: 85vh;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #docanHeader {
+    background: #8b6340;
+    color: #fdf6e3;
+    font-family: 'Georgia', 'Batang', '바탕', serif;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    letter-spacing: 3px;
+  }
+
+  #docanCloseBtn {
+    background: none;
+    border: none;
+    color: #fdf6e3;
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+  }
+
+  #docanPages {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .docanTile {
+    background: white;
+    border: 2px solid #c8985a;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .docanTile:hover { background: #fff8e8; transform: scale(1.03); }
+  .docanTile.locked { opacity: 0.55; cursor: default; }
+  .docanTile.locked:hover { transform: none; }
+
+  .docanTile .tile-icon { font-size: 32px; }
+  .docanTile .tile-name {
+    font-family: 'Georgia', 'Batang', '바탕', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a3a1a;
+  }
+
+  .docanTile.locked .tile-name { color: #aaa; }
+
+  /* Fish detail popup */
+  #fishDetailOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #fishDetailOverlay.active { display: flex; }
+  #fishDetailOverlay.new-fish { display: flex; }
+
+  #fishDetailCard {
+    background: #fdf6e3;
+    border: 3px solid #8b6340;
+    border-radius: 14px;
+    width: 90%;
+    max-width: 640px;
+    max-height: 80vh;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  #fishDetailCard .card-header {
+    background: #8b6340;
+    color: #fdf6e3;
+    font-family: 'Georgia', 'Batang', '바탕', serif;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    letter-spacing: 2px;
+  }
+
+  #fishDetailCard .card-close {
+    background: none;
+    border: none;
+    color: #fdf6e3;
+    font-size: 22px;
+    cursor: pointer;
+    padding: 0 4px;
+  }
+
+  #fishDetailBody {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .fish-page-left {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-right: 2px dashed #c8985a;
+    gap: 12px;
+  }
+
+  .fish-page-right {
+    flex: 1;
+    padding: 20px 24px;
+    overflow-y: auto;
+  }
+
+  .fish-img-box {
+    width: 140px;
+    height: 100px;
+    background: linear-gradient(135deg, #d0eaff, #b0d8f8);
+    border-radius: 10px;
+    border: 2px solid #8bc4f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px;
+    overflow: hidden;
+  }
+
+  .fish-img-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+    display: none;
+    background: #f0f8ff;
+  }
+
+  .fish-name-main {
+    font-family: 'Georgia', 'Batang', '바탕', serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #1a3a1a;
+    text-align: center;
+  }
+
+  .fish-sci-name {
+    font-size: 11px;
+    color: #888;
+    text-align: center;
+    font-style: italic;
+  }
+
+  .fish-desc {
+    font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', sans-serif;
+    font-size: 14px;
+    color: #2a3a2a;
+    line-height: 1.8;
+    word-break: keep-all;
+  }
+
+  .fish-desc-title {
+    font-family: 'Georgia', 'Batang', '바탕', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #5a3010;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+
+  /* Card nav */
+  #cardNav {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 10px;
+    border-top: 1px solid #c8985a;
+    background: #fdf6e3;
+  }
+
+  .navBtn {
+    background: #8b6340;
+    border: none;
+    color: #fdf6e3;
+    font-family: 'Georgia', 'Batang', '바탕', serif;
+    font-size: 14px;
+    padding: 6px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .navBtn:hover { background: #6a4820; }
+  .navBtn:disabled { opacity: 0.35; cursor: default; }
+
+  #cardPageInfo {
+    font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', sans-serif;
+    font-size: 13px;
+    color: #888;
+    align-self: center;
+  }
+
+  /* New fish celebration */
+  #celebrationOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0);
+    z-index: 400;
+    display: none;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  #celebrationOverlay.active { display: block; }
+
+  .confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    animation: confettiFall linear forwards;
+  }
+
+  @keyframes confettiFall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  #newFishBanner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: linear-gradient(135deg, #f5c842, #ffaa00);
+    border: 4px solid #8b6340;
+    border-radius: 20px;
+    padding: 18px 40px;
+    text-align: center;
+    z-index: 410;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    pointer-events: none;
+  }
+
+  #newFishBanner.show { transform: translate(-50%, -50%) scale(1); }
+
+  #newFishBanner h2 {
+    font-family: 'Georgia', 'Batang', '바탕', serif;
+    font-size: 26px;
+    color: #1a3a1a;
+    margin-bottom: 4px;
+    letter-spacing: 3px;
+  }
+
+  #newFishBanner p {
+    font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', sans-serif;
+    font-size: 13px;
+    color: #5a3010;
+  }
+
+  /* Error flash */
+  #errorFlash {
+    position: absolute;
+    inset: 0;
+    background: rgba(229,57,53,0.25);
+    z-index: 500;
+    display: none;
+    pointer-events: none;
+    animation: flashOut 0.4s ease-out forwards;
+  }
+
+  @keyframes flashOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* Bobber animation */
+  @keyframes bobUp {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  @keyframes bobWild {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    25% { transform: translateY(-10px) rotate(3deg); }
+    75% { transform: translateY(4px) rotate(-2deg); }
+  }
+
+  .bobbing { animation: bobUp 2s ease-in-out infinite; }
+  .biting { animation: bobWild 0.25s ease-in-out infinite; }
+
+  /* Completion banner */
+  #completionBanner {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 600;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #completionBanner.active { display: flex; }
+
+  .completion-card {
+    background: #fdf6e3;
+    border: 4px solid #f5c842;
+    border-radius: 20px;
+    padding: 36px 48px;
+    text-align: center;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+    max-width: 420px;
+  }
+
+  .completion-card h2 {
+    font-family: 'Georgia', 'Batang', '바탕', serif;
+    font-size: 28px;
+    color: #1a3a1a;
+    margin-bottom: 10px;
+    letter-spacing: 3px;
+  }
+
+  .completion-card p {
+    font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', sans-serif;
+    font-size: 14px;
+    color: #5a3010;
+    line-height: 1.8;
+    margin-bottom: 20px;
+  }
+
+  .completion-card .backHomeBtn {
+    background: #8b6340;
+    border: none;
+    color: #fdf6e3;
+    font-family: 'Georgia', 'Batang', '바탕', serif;
+    font-size: 16px;
+    padding: 10px 30px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .completion-card .backHomeBtn:hover { background: #6a4820; }
+
+  /* Splash text */
+  #splashText {
+    position: absolute;
+    z-index: 60;
+    font-size: 28px;
+    pointer-events: none;
+    animation: splashFly 1.2s ease-out forwards;
+    display: none;
+  }
+
+  @keyframes splashFly {
+    0% { opacity: 1; transform: scale(0.5) translateY(0); }
+    50% { opacity: 1; transform: scale(1.3) translateY(-30px); }
+    100% { opacity: 0; transform: scale(0.8) translateY(-80px); }
+  }
+
+  /* Rod line canvas */
+  #lineCanvas {
+    position: absolute;
+    inset: 0;
+    z-index: 12;
+    pointer-events: none;
+  }
+
+</style>
+</head>
+<body>
+<div id="gameContainer">
+
+  <!-- ============================
+       START SCREEN
+  ============================= -->
+  <div id="startScreen" class="screen active">
+
+    <!-- Sky & birds -->
+    <div>
+      <div class="cloud" style="width:100px;height:28px;top:6%;left:10%">
+        <span style="position:absolute;width:50px;height:40px;background:rgba(255,255,255,0.85);border-radius:50%;top:-18px;left:15px;display:block"></span>
+        <span style="position:absolute;width:35px;height:30px;background:rgba(255,255,255,0.85);border-radius:50%;top:-10px;left:45px;display:block"></span>
+      </div>
+      <div class="cloud" style="width:80px;height:22px;top:12%;left:65%">
+        <span style="position:absolute;width:40px;height:32px;background:rgba(255,255,255,0.85);border-radius:50%;top:-14px;left:10px;display:block"></span>
+      </div>
+    </div>
+
+    <!-- Mountains -->
+    <div class="mountain" style="border-left-width:80px;border-right-width:80px;border-bottom-width:120px;left:5%;border-bottom-color:#6a9a58"></div>
+    <div class="mountain" style="border-left-width:110px;border-right-width:110px;border-bottom-width:160px;left:15%;border-bottom-color:#5a8c4a"></div>
+    <div class="mountain" style="border-left-width:90px;border-right-width:90px;border-bottom-width:130px;right:10%;border-bottom-color:#6aaa58"></div>
+
+    <!-- River bank -->
+    <div class="riverBank"></div>
+
+    <!-- Trees -->
+    <div class="tree" style="bottom:38%;left:5%"><div class="tree-trunk"></div><div class="tree-top"></div></div>
+    <div class="tree" style="bottom:38%;left:22%"><div class="tree-trunk" style="height:52px"></div><div class="tree-top" style="border-bottom-width:68px"></div></div>
+    <div class="tree" style="bottom:38%;right:8%"><div class="tree-trunk" style="height:36px"></div><div class="tree-top" style="border-bottom-width:50px"></div></div>
+
+    <!-- River water -->
+    <div class="riverWater">
+      <div class="ripple" style="width:60px;height:20px;left:25%;top:30%"></div>
+      <div class="ripple" style="width:40px;height:14px;left:55%;top:55%;animation-delay:1.5s"></div>
+      <div class="ripple" style="width:50px;height:16px;left:75%;top:20%;animation-delay:0.8s"></div>
+    </div>
+
+    <!-- Bird -->
+    <div class="bird" style="animation-duration:14s">🐦</div>
+    <div class="bird" style="animation-duration:18s;animation-delay:6s;font-size:14px;top:20%">🐦</div>
+
+    <!-- Title -->
+    <div id="titlePanel">
+      <div class="subtitle">논산천</div>
+      <h1>생태도감</h1>
+      <div class="accent-line"></div>
+    </div>
+
+    <!-- Chapter list -->
+    <div id="chapterList">
+      <button class="chapterBtn" onclick="enterChapter1()" id="ch1Btn">
+        <span class="ch-icon">🐟</span>
+        <span>챕터 1 — 물고기 도감</span>
+        <span id="ch1CompleteTag" class="ch-complete" style="display:none">완료</span>
+      </button>
+      <button class="chapterBtn" id="ch2Btn" onclick="enterChapter2()" style="display:none">
+        <span class="ch-icon">🌿</span>
+        <span>챕터 2 — 식물 도감</span>
+        <span id="ch2CompleteTag" class="ch-complete" style="display:none">완료</span>
+      </button>
+    </div>
+
+    <!-- 데이터 초기화 버튼 -->
+    <button onclick="resetData()" style="
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      background: rgba(255,251,225,0.85);
+      border: 2px solid #a07850;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-family: 'Georgia', 'Batang', serif;
+      font-size: 12px;
+      color: #8b4040;
+      cursor: pointer;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    ">🗑️ 데이터 초기화</button>
+
+  </div>
+
+  <!-- ============================
+       FISHING SCREEN
+  ============================= -->
+  <div id="fishingScreen" class="screen">
+    <canvas id="lineCanvas"></canvas>
+
+    <!-- Sky -->
+    <div id="fishingSky">
+      <div class="cloud" style="position:absolute;width:90px;height:22px;top:20%;left:20%">
+        <span style="position:absolute;width:44px;height:36px;background:rgba(255,255,255,0.8);border-radius:50%;top:-16px;left:10px;display:block"></span>
+      </div>
+      <div class="cloud" style="position:absolute;width:70px;height:18px;top:30%;right:25%">
+        <span style="position:absolute;width:34px;height:28px;background:rgba(255,255,255,0.8);border-radius:50%;top:-12px;left:8px;display:block"></span>
+      </div>
+    </div>
+
+    <!-- Bank -->
+    <div id="fishingBank">
+      <div class="grass-tuft" style="left:8%"></div>
+      <div class="grass-tuft" style="left:15%;height:14px"></div>
+      <div class="grass-tuft" style="left:28%"></div>
+      <div class="grass-tuft" style="left:45%;height:16px"></div>
+      <div class="grass-tuft" style="right:20%"></div>
+      <div class="grass-tuft" style="right:10%;height:14px"></div>
+    </div>
+
+    <!-- Water (clickable) -->
+    <div id="fishingWater">
+      <div class="waterShimmer"></div>
+    </div>
+
+    <!-- Rod (SVG) -->
+    <div id="fishingRodWrap">
+      <svg id="rodSvg" viewBox="0 0 180 220" overflow="visible">
+        <!-- 릴 받침대 -->
+        <rect x="60" y="195" width="30" height="14" rx="4" fill="#5D2E0C"/>
+        <!-- 릴 -->
+        <ellipse cx="75" cy="195" rx="14" ry="10" fill="#888" stroke="#555" stroke-width="1.5"/>
+        <ellipse cx="75" cy="195" rx="7" ry="5" fill="#aaa"/>
+        <!-- 낚싯대 몸체 (굵은 하단 → 가는 상단) -->
+        <line id="rodShaft" x1="75" y1="205" x2="115" y2="30"
+          stroke="url(#rodGrad)" stroke-width="5" stroke-linecap="round"/>
+        <line x1="75" y1="205" x2="115" y2="30"
+          stroke="url(#rodGrad2)" stroke-width="2" stroke-linecap="round"/>
+        <!-- 가이드 링 3개 -->
+        <circle cx="109" cy="52"  r="3.5" fill="none" stroke="#aaa" stroke-width="1.5"/>
+        <circle cx="103" cy="80"  r="3"   fill="none" stroke="#aaa" stroke-width="1.5"/>
+        <circle cx="96"  cy="112" r="2.5" fill="none" stroke="#aaa" stroke-width="1.5"/>
+        <!-- 낚싯대 끝 표시 (줄 연결점) -->
+        <circle id="rodTipDot" cx="115" cy="30" r="2" fill="#ffcc00"/>
+        <defs>
+          <linearGradient id="rodGrad" x1="75" y1="205" x2="115" y2="30" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#6B3310"/>
+            <stop offset="100%" stop-color="#A0522D"/>
+          </linearGradient>
+          <linearGradient id="rodGrad2" x1="75" y1="205" x2="115" y2="30" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="rgba(255,200,150,0.0)"/>
+            <stop offset="100%" stop-color="rgba(255,200,150,0.25)"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+
+    <!-- Bobber & fish shadow rendered via JS -->
+    <div id="bobber">
+      <div id="bobberTop"></div>
+      <div id="bobberBottom"></div>
+    </div>
+
+    <div id="fishShadow">🐟</div>
+
+    <!-- Rod line canvas already defined above -->
+
+    <!-- Status message -->
+    <div id="statusMsg">미끼를 선택하고 강물을 터치해 캐스팅하세요!</div>
+
+    <!-- Bite alert -->
+    <div id="biteAlert">!! 입질 !!</div>
+
+    <!-- Timing bar -->
+    <div id="timingBar">
+      <div id="timingLabel">화면을 터치하세요!</div>
+      <div id="timingTrack">
+        <div id="greenZone"></div>
+        <div id="redMarker"></div>
+      </div>
+      <div id="tapHint">▼ 탭!</div>
+    </div>
+
+    <!-- Splash text -->
+    <div id="splashText">💦</div>
+
+    <!-- 잡은 물고기 카운터 -->
+    <div id="catchCounter">🐟 0마리</div>
+
+    <!-- 피버타임 오버레이 -->
+    <div id="feverOverlay"></div>
+
+    <!-- 가짜미끼 해금 알림 -->
+    <div id="fakeBaitAlert">
+      <h3>✨ 해금! ✨</h3>
+      <p>가짜물고기 미끼 사용이 가능해요!</p>
+    </div>
+
+    <!-- Bait selector -->
+    <div id="baitSelector">
+      <span class="baitLabel">미끼</span>
+      <button class="baitBtn selected" id="bait0" onclick="selectBait(0,event)">
+        🪱<span class="bait-name">지렁이</span>
+      </button>
+      <button class="baitBtn" id="bait1" onclick="selectBait(1,event)">
+        🟤<span class="bait-name">떡밥</span>
+      </button>
+      <button class="baitBtn locked-bait" id="bait2" onclick="selectBait(2,event)">
+        🐠<span class="bait-name">가짜물고기</span>
+        <span id="fakeBaitProgress">0/10</span>
+      </button>
+    </div>
+
+    <!-- Docan button -->
+    <button id="docanBtn" onclick="openDocan()">
+      📖 도감 <span id="docanCount">0/7</span>
+    </button>
+
+    <!-- Back button -->
+    <button class="backBtn" onclick="goHome()">← 처음으로</button>
+
+    <!-- Error flash -->
+    <div id="errorFlash"></div>
+  </div>
+
+  <!-- ============================
+       DOCAN OVERLAY (fish list)
+  ============================= -->
+  <div id="docanOverlay">
+    <div id="docanBook">
+      <div id="docanHeader">
+        <span>🐟 물고기 도감</span>
+        <span id="docanHeaderCount" style="font-size:14px;letter-spacing:1px">0 / 7</span>
+        <button id="docanCloseBtn" onclick="closeDocan()">✕</button>
+      </div>
+      <div id="docanPages"></div>
+    </div>
+  </div>
+
+  <!-- ============================
+       FISH DETAIL OVERLAY
+  ============================= -->
+  <div id="fishDetailOverlay">
+    <div id="fishDetailCard">
+      <div class="card-header">
+        <span id="detailTitle">물고기 정보</span>
+        <button class="card-close" onclick="closeDetail()">✕</button>
+      </div>
+      <div id="fishDetailBody">
+        <div class="fish-page-left">
+          <div class="fish-img-box" id="detailImgBox">
+            <img id="detailImg" src="" alt="">
+            <span id="detailImgEmoji">🐟</span>
+          </div>
+          <div class="fish-name-main" id="detailName">밀어</div>
+          <div class="fish-sci-name" id="detailSci"></div>
+        </div>
+        <div class="fish-page-right">
+          <div class="fish-desc-title">📋 생태 정보</div>
+          <div class="fish-desc" id="detailDesc"></div>
+        </div>
+      </div>
+      <div id="cardNav">
+        <button class="navBtn" id="prevCardBtn" onclick="navigateCard(-1)">◀ 이전</button>
+        <span id="cardPageInfo">1 / 7</span>
+        <button class="navBtn" id="nextCardBtn" onclick="navigateCard(1)">다음 ▶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       CELEBRATION OVERLAY
+  ============================= -->
+  <div id="celebrationOverlay">
+    <div id="newFishBanner">
+      <h2>✨ 새로운 발견! ✨</h2>
+      <p id="newFishName">밀어</p>
+    </div>
+  </div>
+
+  <!-- 챕터1 진입 안내 팝업 -->
+  <div id="ch1IntroPopup" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.6);z-index:700;align-items:center;justify-content:center;">
+    <div style="background:#fdf6e3;border:3px solid #8b6340;border-radius:14px;padding:30px 36px;max-width:360px;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,0.5);">
+      <div style="font-size:36px;margin-bottom:12px;">🎣</div>
+      <p style="font-family:'Georgia','Batang',serif;font-size:16px;color:#1a3a1a;line-height:1.8;">논산천에는 어떤 물고기가 사는지 알아볼까요?<br>낚시게임을 통해 물고기 도감을 채워주세요.</p>
+    </div>
+  </div>
+
+  <!-- 물고기 도감 완성 축하 팝업 1 -->
+  <div id="fishCompletePopup1" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.65);z-index:700;align-items:center;justify-content:center;">
+    <div style="background:linear-gradient(135deg,#fffbe6,#fff3cd);border:3px solid #f5c842;border-radius:16px;padding:32px 40px;max-width:380px;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,0.5);position:relative;">
+      <div style="font-size:40px;margin-bottom:10px;">🎉</div>
+      <h2 style="font-family:'Georgia','Batang',serif;font-size:22px;color:#1a3a1a;margin-bottom:10px;letter-spacing:2px;">축하합니다!</h2>
+      <p style="font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:15px;color:#3a3a1a;line-height:1.8;">논산천 물고기 도감을<br>다 채웠어요!</p>
+      <button onclick="showFishComplete2()" style="position:absolute;bottom:14px;right:16px;background:#8b6340;border:none;color:white;border-radius:6px;padding:6px 12px;font-size:18px;cursor:pointer;line-height:1;">→</button>
+    </div>
+  </div>
+
+  <!-- 물고기 도감 완성 축하 팝업 2 -->
+  <div id="fishCompletePopup2" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.65);z-index:700;align-items:center;justify-content:center;">
+    <div style="background:#fdf6e3;border:3px solid #8b6340;border-radius:16px;padding:32px 40px;max-width:380px;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,0.5);">
+      <div style="font-size:36px;margin-bottom:12px;">🌿</div>
+      <p style="font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:15px;color:#1a3a1a;line-height:1.9;">이제 논산천에서 볼 수 있는<br>식물들을 알아볼까요?<br>처음으로 돌아가서<br>챕터 2를 눌러주세요.</p>
+    </div>
+  </div>
+
+  <!-- 챕터2 화면 -->
+  <div id="chapter2Screen" class="screen">
+    <!-- 배경: 봄날 강가 -->
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg,#c8e6f5 0%,#a8d8f0 25%,#7ab648 45%,#5a8c3c 58%,#4a90d9 58%,#2a72a8 80%,#1a5585 100%);overflow:hidden;">
+      <!-- 구름 -->
+      <div style="position:absolute;top:5%;left:15%;width:90px;height:24px;background:rgba(255,255,255,0.9);border-radius:50px;">
+        <span style="position:absolute;width:46px;height:38px;background:rgba(255,255,255,0.9);border-radius:50%;top:-18px;left:12px;display:block"></span>
+      </div>
+      <div style="position:absolute;top:10%;right:20%;width:70px;height:18px;background:rgba(255,255,255,0.85);border-radius:50px;">
+        <span style="position:absolute;width:34px;height:28px;background:rgba(255,255,255,0.85);border-radius:50%;top:-12px;left:8px;display:block"></span>
+      </div>
+      <!-- 벚꽃 나무 (왼쪽) -->
+      <div style="position:absolute;bottom:42%;left:3%;pointer-events:none;">
+        <div style="width:10px;height:80px;background:#6b4423;margin:0 auto;border-radius:5px;"></div>
+        <div style="width:110px;height:90px;background:rgba(255,182,193,0.85);border-radius:50%;position:relative;left:-50px;top:-20px;box-shadow:0 0 20px rgba(255,150,180,0.4);"></div>
+      </div>
+      <!-- 버드나무 (오른쪽) -->
+      <div style="position:absolute;bottom:42%;right:5%;pointer-events:none;">
+        <div style="width:10px;height:100px;background:#5a4020;margin:0 auto;border-radius:5px;"></div>
+        <div style="width:80px;height:120px;background:rgba(150,210,100,0.8);border-radius:30% 40% 60% 30%;position:relative;left:-35px;top:-30px;"></div>
+      </div>
+      <!-- 꽃들 -->
+      <div style="position:absolute;bottom:42%;left:20%;font-size:18px;pointer-events:none;">🌸🌼🌸</div>
+      <div style="position:absolute;bottom:42%;right:22%;font-size:16px;pointer-events:none;">🌼🌸</div>
+      <!-- 강물 반짝임 -->
+      <div style="position:absolute;top:60%;left:0;right:0;height:24px;background:repeating-linear-gradient(90deg,transparent 0%,transparent 50px,rgba(255,255,255,0.12) 50px,rgba(255,255,255,0.12) 70px);animation:riverFlow 4s linear infinite;"></div>
+    </div>
+
+    <!-- 처음으로 버튼 -->
+    <button class="backBtn" onclick="goHome()">← 처음으로</button>
+
+    <!-- 도감 버튼 -->
+    <button id="plantDocanBtn" onclick="openPlantDocan()" style="position:absolute;top:12px;right:12px;background:rgba(255,251,225,0.92);border:2px solid #8b6340;border-radius:10px;padding:8px 14px;font-family:'Georgia','Batang',serif;font-size:13px;color:#1a3a1a;cursor:pointer;z-index:100;display:flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,0.25);">
+      🌿 도감 <span id="plantDocanCount">0/4</span>
+    </button>
+
+    <!-- 라운드 표시 -->
+    <div id="roundLabel" style="position:absolute;top:55px;left:50%;transform:translateX(-50%);background:rgba(255,251,225,0.92);border:2px solid #8b6340;border-radius:20px;padding:5px 18px;font-family:'Georgia','Batang',serif;font-size:13px;font-weight:700;color:#1a3a1a;z-index:30;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.2);">
+      🃏 라운드 1
+    </div>
+
+    <!-- 카드 게임 영역 -->
+    <div id="cardGameArea" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px;max-width:95%;padding:10px;"></div>
+
+    <!-- 라운드 클리어 팝업 -->
+    <div id="roundClearPopup" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.6);z-index:400;align-items:center;justify-content:center;">
+      <div style="background:#fdf6e3;border:3px solid #8b6340;border-radius:14px;padding:28px 36px;max-width:340px;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,0.5);">
+        <div style="font-size:36px;margin-bottom:8px;">🌿</div>
+        <h3 style="font-family:'Georgia','Batang',serif;font-size:19px;color:#1a3a1a;margin-bottom:8px;">라운드 클리어!</h3>
+        <p id="roundClearMsg" style="font-family:'Apple SD Gothic Neo',sans-serif;font-size:14px;color:#3a3a1a;margin-bottom:16px;line-height:1.7;"></p>
+        <button onclick="nextRound()" style="background:#5a8c3c;border:none;color:white;font-family:'Georgia','Batang',serif;font-size:15px;padding:10px 28px;border-radius:8px;cursor:pointer;">다음 라운드 →</button>
+      </div>
+    </div>
+
+    <!-- 챕터2 완료 -->
+    <div id="ch2CompleteBanner" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.7);z-index:500;align-items:center;justify-content:center;">
+      <div style="background:#fdf6e3;border:4px solid #f5c842;border-radius:20px;padding:36px 48px;text-align:center;max-width:380px;box-shadow:0 12px 48px rgba(0,0,0,0.5);">
+        <div style="font-size:40px;margin-bottom:10px;">🎊</div>
+        <h2 style="font-family:'Georgia','Batang',serif;font-size:24px;color:#1a3a1a;margin-bottom:10px;">챕터 2 완료!</h2>
+        <p style="font-family:'Apple SD Gothic Neo',sans-serif;font-size:14px;color:#3a3a1a;line-height:1.8;margin-bottom:20px;">논산천의 식물 도감을<br>모두 채웠어요!</p>
+        <button onclick="goHome()" style="background:#8b6340;border:none;color:white;font-family:'Georgia','Batang',serif;font-size:15px;padding:10px 28px;border-radius:8px;cursor:pointer;">처음 화면으로</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 식물 도감 오버레이 -->
+  <div id="plantDocanOverlay" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.65);z-index:200;align-items:center;justify-content:center;">
+    <div style="background:#fdf6e3;border:3px solid #8b6340;border-radius:14px;width:90%;max-width:680px;max-height:85vh;box-shadow:0 12px 48px rgba(0,0,0,0.5);display:flex;flex-direction:column;overflow:hidden;">
+      <div style="background:#8b6340;color:#fdf6e3;font-family:'Georgia','Batang',serif;font-size:18px;font-weight:700;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;letter-spacing:3px;">
+        <span>🌿 식물 도감</span>
+        <span id="plantDocanHeaderCount" style="font-size:14px;">0 / 4</span>
+        <button onclick="closePlantDocan()" style="background:none;border:none;color:#fdf6e3;font-size:24px;cursor:pointer;">✕</button>
+      </div>
+      <div id="plantDocanPages" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:16px;overflow-y:auto;flex:1;"></div>
+    </div>
+  </div>
+
+  <!-- 식물 상세 팝업 -->
+  <div id="plantDetailOverlay" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.65);z-index:300;align-items:center;justify-content:center;">
+    <div style="background:#fdf6e3;border:3px solid #8b6340;border-radius:14px;width:90%;max-width:640px;max-height:80vh;box-shadow:0 12px 48px rgba(0,0,0,0.5);overflow:hidden;display:flex;flex-direction:column;">
+      <div style="background:#8b6340;color:#fdf6e3;font-family:'Georgia','Batang',serif;font-size:16px;font-weight:700;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;letter-spacing:2px;">
+        <span id="plantDetailTitle">식물 정보</span>
+        <button onclick="closePlantDetail()" style="background:none;border:none;color:#fdf6e3;font-size:22px;cursor:pointer;">✕</button>
+      </div>
+      <div style="display:flex;flex:1;overflow:hidden;">
+        <div style="flex:1;padding:20px;display:flex;flex-direction:column;align-items:center;border-right:2px dashed #c8985a;gap:12px;">
+          <div style="width:140px;height:110px;border-radius:10px;border:2px solid #8bc4a0;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#e8f5e9;">
+            <img id="plantDetailImg" src="" style="width:100%;height:100%;object-fit:contain;display:none;">
+            <span id="plantDetailEmoji" style="font-size:56px;">🌿</span>
+          </div>
+          <div id="plantDetailName" style="font-family:'Georgia','Batang',serif;font-size:20px;font-weight:700;color:#1a3a1a;text-align:center;"></div>
+          <div id="plantDetailSci" style="font-size:11px;color:#888;font-style:italic;text-align:center;"></div>
+        </div>
+        <div style="flex:1;padding:20px 24px;overflow-y:auto;">
+          <div style="font-family:'Georgia','Batang',serif;font-size:14px;font-weight:700;color:#3a6020;margin-bottom:8px;">📋 생태 정보</div>
+          <div id="plantDetailDesc" style="font-family:'Apple SD Gothic Neo',sans-serif;font-size:14px;color:#2a3a2a;line-height:1.8;word-break:keep-all;"></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:12px;padding:10px;border-top:1px solid #c8985a;background:#fdf6e3;">
+        <button onclick="navigatePlantCard(-1)" id="prevPlantBtn" style="background:#8b6340;border:none;color:#fdf6e3;font-family:'Georgia','Batang',serif;font-size:14px;padding:6px 18px;border-radius:6px;cursor:pointer;">◀ 이전</button>
+        <span id="plantCardPageInfo" style="font-size:13px;color:#888;align-self:center;">1 / 4</span>
+        <button onclick="navigatePlantCard(1)" id="nextPlantBtn" style="background:#8b6340;border:none;color:#fdf6e3;font-family:'Georgia','Batang',serif;font-size:14px;padding:6px 18px;border-radius:6px;cursor:pointer;">다음 ▶</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- #gameContainer -->
+
+<script>
+// =============================
+// DATA
+// =============================
+const FISH_DATA = [
+  {
+    id: 'mileo',
+    name: '밀어',
+    emoji: '🐡',
+    img: 'images/밀어.jpg',
+    prob: 0.30,
+    desc: '망둥어과의 물고기. 물이 맑고 바닥에 자갈이나 모래가 깔린 하천 중류에서 산다. 몸길이는 5~13cm 정도 되며 머리는 위아래로 납작하고 뺨이 발달해 있다. 논산에서는 을문이, 강효자고기라고 불린다.',
+    sci: 'Rhinogobius brunneus'
+  },
+  {
+    id: 'gingmol',
+    name: '긴몰개',
+    emoji: '🐟',
+    img: 'images/긴몰개.jpg',
+    prob: 0.15,
+    desc: '잉어과에 속하는 민물고기. 물의 흐름이 완만한 하천과 물풀이 우거진 곳을 좋아한다. 몸길이는 약 10cm로 긴원통형이며 옆으로 납작하다. 작은 민물새우나 수서곤충을 잡아먹는다.',
+    sci: 'Squalidus gracilis majimae'
+  },
+  {
+    id: 'miyugi',
+    name: '미유기',
+    emoji: '🐠',
+    img: 'images/미유기.jpg',
+    prob: 0.20,
+    desc: '메기과의 물고기. 위턱이 아래턱보다 짧고 콧구멍과 아래턱에 각각 1쌍의 수염이 있다. 하천 상류의 물이 맑고 자갈이나 바위가 많은 곳에 산다.',
+    sci: 'Silurus microdorsalis'
+  },
+  {
+    id: 'dongsari',
+    name: '동사리',
+    emoji: '🦈',
+    img: 'images/동사리.jpg',
+    prob: 0.05,
+    desc: '동사리과의 민물고기. 몸길이는 15cm 정도이며 눈이 작고 머리의 등 쪽에 있다. 황갈색몸통에 흑색반점이 있다. 물의 흐름이 약한 하천의 돌 밑이나 모래가 움푹 파인 곳의 밑바닥에 붙어있는 경우가 많다.',
+    sci: 'Odontobutis platycephala'
+  },
+  {
+    id: 'waemaichi',
+    name: '왜매치',
+    emoji: '🐟',
+    img: 'images/왜매치.jpg',
+    prob: 0.10,
+    desc: '잉어과의 물고기. 몸이 길고 주둥이는 짧고 둔하다. 모래나 진흙 속으로 파고 들어가는 습성이 있다.',
+  },
+  {
+    id: 'chamjongae',
+    name: '참종개',
+    emoji: '🐡',
+    img: 'images/참종개.jpg',
+    prob: 0.10,
+    desc: '미꾸리과의 물고기. 등 쪽으로 구름모양의 얼룩무늬가 불규칙하게 있고 눈 밑에 가시가 있다. 하천 중상류의 물의 속도가 빠르고 물이 맑은 곳에 산다.',
+  },
+  {
+    id: 'gaksi',
+    name: '각시붕어',
+    emoji: '🐠',
+    img: 'images/각시붕어.jpg',
+    prob: 0.10,
+    desc: '잉어과의 물고기. 몸은 옆으로 납작하고 몸통의 높이가 높다. 몸통과 지느러미에 암청색줄무늬와 적색무늬가 있다. 암컷은 4~6월에 조개안에 알을 낳는다.',
+    sci: 'Rhodeus uyekii'
+  }
+];
+
+// =============================
+// STATE (persisted across screens)
+// =============================
+const state = {
+  caughtFish: new Set(JSON.parse(localStorage.getItem('caught') || '[]')),
+  ch1Complete: localStorage.getItem('ch1Complete') === 'true',
+  ch2Complete: localStorage.getItem('ch2Complete') === 'true',
+  unlockedPlants: new Set(JSON.parse(localStorage.getItem('unlockedPlants') || '[]')),
+  currentRound: parseInt(localStorage.getItem('currentRound') || '1'),
+  totalCaught: parseInt(localStorage.getItem('totalCaught') || '0'),
+  catchCount: JSON.parse(localStorage.getItem('catchCount') || '{}'),
+  catchOrder: JSON.parse(localStorage.getItem('catchOrder') || '{}'),
+  catchSeq: parseInt(localStorage.getItem('catchSeq') || '0'),
+  fakeBaitUnlocked: false,
+  fakeBaitActive: false,
+  fakeBaitNextAt: parseInt(localStorage.getItem('fakeBaitNextAt') || '10')
+};
+
+function saveState() {
+  localStorage.setItem('caught', JSON.stringify([...state.caughtFish]));
+  localStorage.setItem('ch1Complete', state.ch1Complete);
+  localStorage.setItem('ch2Complete', state.ch2Complete);
+  localStorage.setItem('unlockedPlants', JSON.stringify([...state.unlockedPlants]));
+  localStorage.setItem('currentRound', state.currentRound);
+  localStorage.setItem('totalCaught', state.totalCaught);
+  localStorage.setItem('catchCount', JSON.stringify(state.catchCount));
+  localStorage.setItem('catchOrder', JSON.stringify(state.catchOrder));
+  localStorage.setItem('catchSeq', state.catchSeq);
+  localStorage.setItem('fakeBaitNextAt', state.fakeBaitNextAt);
+}
+
+// =============================
+// FISHING GAME STATE
+// =============================
+let fishingPhase = 'idle'; // idle | casting | waiting | biting | timing | reeling
+let selectedBait = 0;
+let bobberX = 0, bobberY = 0;
+let bobberVisible = false;
+let biteTimer = null;
+let biteCountdown = null;
+let timingInterval = null;
+let markerPos = 0;
+let markerDir = 1;
+let markerSpeed = 0;
+let greenStart = 0, greenWidth = 0;
+let trackWidth = 320;
+let currentFishId = null;
+let currentDetailIndex = 0;
+let detailSource = 'catch'; // 'catch' | 'docan'
+
+// =============================
+// AUDIO (using AudioContext for simple sounds)
+// =============================
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playBeep(freq=440, dur=0.15, type='sine', vol=0.3) {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.start(); osc.stop(ctx.currentTime + dur);
+  } catch(e) {}
+}
+
+// 진동 헬퍼 (모바일만 동작, PC는 무시됨)
+function vibrate(pattern) {
+  if (navigator.vibrate) navigator.vibrate(pattern);
+}
+
+function playCast() {
+  vibrate([30, 20, 30]); // 짧게 두 번 - 캐스팅
+  playBeep(300, 0.3, 'sawtooth', 0.2);
+  setTimeout(() => playBeep(200, 0.25, 'sine', 0.15), 180);
+}
+
+function playSplash() {
+  playBeep(180, 0.4, 'sine', 0.3);
+  setTimeout(() => playBeep(220, 0.3, 'sine', 0.2), 100);
+  setTimeout(() => playBeep(160, 0.2, 'sine', 0.15), 200);
+}
+
+function playBite() {
+  vibrate([80, 40, 80, 40, 80]); // 세 번 강하게 - 입질
+  playBeep(600, 0.08, 'square', 0.4);
+  setTimeout(() => playBeep(700, 0.08, 'square', 0.4), 120);
+  setTimeout(() => playBeep(800, 0.1, 'square', 0.5), 240);
+}
+
+function playError() {
+  playBeep(220, 0.1, 'sawtooth', 0.4);
+  setTimeout(() => playBeep(180, 0.15, 'sawtooth', 0.4), 100);
+}
+
+function playSuccess() {
+  [523, 659, 784, 1047].forEach((f, i) => {
+    setTimeout(() => playBeep(f, 0.18, 'sine', 0.35), i * 120);
+  });
+}
+
+function playNewFish() {
+  vibrate([100, 50, 100, 50, 200]); // 새 물고기 등록 - 리듬감 있게
+  [523, 659, 784, 1047, 1319].forEach((f, i) => {
+    setTimeout(() => playBeep(f, 0.22, 'sine', 0.4), i * 100);
+  });
+  setTimeout(() => {
+    [1047, 784, 1047, 1319, 1568].forEach((f, i) => {
+      setTimeout(() => playBeep(f, 0.2, 'sine', 0.35), i * 90);
+    });
+  }, 600);
+}
+
+function playFail() {
+  playBeep(350, 0.15, 'sine', 0.3);
+  setTimeout(() => playBeep(280, 0.2, 'sine', 0.3), 150);
+  setTimeout(() => playBeep(220, 0.3, 'sine', 0.25), 300);
+}
+
+function playReel() {
+  for (let i = 0; i < 8; i++) {
+    setTimeout(() => playBeep(400 + i * 30, 0.08, 'square', 0.2), i * 60);
+  }
+}
+
+// =============================
+// SCREEN NAVIGATION
+// =============================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goHome() {
+  clearAllTimers();
+  stopFeverBgm();
+  resetFishingPhase();
+  updateStartScreen();
+  showScreen('startScreen');
+}
+
+function enterChapter1() {
+  showScreen('fishingScreen');
+  resetFishingPhase();
+  updateDocanCount();
+  updateCatchCounter();
+  // 가짜미끼 상태 반영
+  const bait2 = document.getElementById('bait2');
+  if (state.fakeBaitUnlocked) {
+    bait2.classList.remove('locked-bait');
+    bait2.classList.add('fever-bait');
+    document.getElementById('fakeBaitProgress').textContent = '✓';
+  } else {
+    bait2.classList.add('locked-bait');
+    document.getElementById('fakeBaitProgress').textContent =
+      `${state.totalCaught % 10}/10`;
+  }
+  setStatus('미끼를 선택하고 강물을 터치해 캐스팅하세요!');
+  drawRodLine(null, null);
+  // 진입 안내 팝업
+  const popup = document.getElementById('ch1IntroPopup');
+  popup.style.display = 'flex';
+  popup.onclick = () => { popup.style.display = 'none'; };
+}
+
+function resetData() {
+  if (!confirm('모든 플레이 기록이 삭제됩니다. 초기화하시겠어요?')) return;
+  localStorage.clear();
+  location.reload();
+}
+
+function updateStartScreen() {
+  const allCaught = FISH_DATA.every(f => state.caughtFish.has(f.id));
+  state.ch1Complete = allCaught;
+  saveState();
+  const tag = document.getElementById('ch1CompleteTag');
+  if (tag) tag.style.display = allCaught ? 'inline-block' : 'none';
+  // 챕터2 버튼 표시
+  const ch2Btn = document.getElementById('ch2Btn');
+  if (ch2Btn) ch2Btn.style.display = allCaught ? 'flex' : 'none';
+  const ch2Tag = document.getElementById('ch2CompleteTag');
+  if (ch2Tag) ch2Tag.style.display = state.ch2Complete ? 'inline-block' : 'none';
+}
+
+// =============================
+// FISHING CORE
+// =============================
+function selectBait(idx, e) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  if (fishingPhase !== 'idle') {
+    setStatus('낚싯줄을 걷어야 미끼를 바꿀 수 있어요!');
+    return;
+  }
+  if (idx === 2) {
+    if (!state.fakeBaitUnlocked) {
+      const remaining = state.fakeBaitNextAt - state.totalCaught;
+      setStatus(`물고기 ${remaining}마리를 더 잡아야 합니다.`);
+      return;
+    }
+    state.fakeBaitActive = true;
+    activateFever();
+    selectedBait = 2;
+    document.querySelectorAll('.baitBtn').forEach((b, i) => b.classList.toggle('selected', i === 2));
+    return;
+  }
+  if (state.fakeBaitActive) {
+    setStatus('가짜물고기 미끼를 먼저 사용해야 해요!');
+    return;
+  }
+  selectedBait = idx;
+  document.querySelectorAll('.baitBtn').forEach((b, i) => b.classList.toggle('selected', i === idx));
+}
+
+function setStatus(msg) {
+  document.getElementById('statusMsg').textContent = msg;
+}
+
+function setBaitLocked(locked) {
+  document.querySelectorAll('.baitBtn').forEach(b => {
+    b.classList.toggle('disabled', locked);
+  });
+}
+
+function clearAllTimers() {
+  clearTimeout(biteTimer);
+  clearTimeout(biteCountdown);
+  clearInterval(timingInterval);
+  biteTimer = null; biteCountdown = null; timingInterval = null;
+}
+
+function resetFishingPhase() {
+  clearAllTimers();
+  fishingPhase = 'idle';
+  document.getElementById('bobber').style.display = 'none';
+  document.getElementById('fishShadow').style.display = 'none';
+  document.getElementById('biteAlert').style.display = 'none';
+  document.getElementById('timingBar').style.display = 'none';
+  const rodWrap = document.getElementById('fishingRodWrap');
+  if (rodWrap) { rodWrap.classList.remove('casting','returning'); }
+  setBaitLocked(false);
+  bobberVisible = false;
+  drawRodLine(null, null);
+}
+
+// Canvas line drawing
+function getRodTipPos() {
+  // SVG rodTipDot의 실제 화면 좌표 계산
+  const container = document.getElementById('gameContainer');
+  const gameRect = container.getBoundingClientRect();
+  const tip = document.getElementById('rodTipDot');
+  if (!tip) return { x: 120, y: 60 };
+  const tipRect = tip.getBoundingClientRect();
+  return {
+    x: tipRect.left - gameRect.left + tipRect.width / 2,
+    y: tipRect.top  - gameRect.top  + tipRect.height / 2
+  };
+}
+
+function drawRodLine(tx, ty) {
+  const canvas = document.getElementById('lineCanvas');
+  const container = document.getElementById('gameContainer');
+  canvas.width = container.offsetWidth;
+  canvas.height = container.offsetHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (tx == null) return;
+
+  const tip = getRodTipPos();
+
+  // 줄이 낚싯대 끝 → 포물선 → 찌
+  ctx.beginPath();
+  ctx.moveTo(tip.x, tip.y);
+  ctx.quadraticCurveTo(
+    (tip.x + tx) / 2, tip.y - 40,
+    tx, ty
+  );
+  ctx.strokeStyle = 'rgba(210,210,210,0.85)';
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+}
+
+// Water area check
+function isWater(e) {
+  const container = document.getElementById('gameContainer');
+  const rect = container.getBoundingClientRect();
+  const water = document.getElementById('fishingWater');
+  const wRect = water.getBoundingClientRect();
+  let clientX, clientY;
+  if (e.touches) {
+    clientX = e.touches[0].clientX;
+    clientY = e.touches[0].clientY;
+  } else {
+    clientX = e.clientX;
+    clientY = e.clientY;
+  }
+  return (
+    clientX >= wRect.left && clientX <= wRect.right &&
+    clientY >= wRect.top && clientY <= wRect.bottom
+  );
+}
+
+function getRelativePos(e) {
+  const container = document.getElementById('gameContainer');
+  const rect = container.getBoundingClientRect();
+  let clientX, clientY;
+  if (e.touches) {
+    clientX = e.touches[0].clientX;
+    clientY = e.touches[0].clientY;
+  } else {
+    clientX = e.clientX;
+    clientY = e.clientY;
+  }
+  return { x: clientX - rect.left, y: clientY - rect.top };
+}
+
+function showErrorFlash() {
+  const el = document.getElementById('errorFlash');
+  el.style.display = 'block';
+  el.style.animation = 'none';
+  void el.offsetWidth;
+  el.style.animation = 'flashOut 0.4s ease-out forwards';
+  setTimeout(() => el.style.display = 'none', 400);
+}
+
+function showSplash(x, y) {
+  const el = document.getElementById('splashText');
+  el.style.left = (x - 16) + 'px';
+  el.style.top = (y - 16) + 'px';
+  el.style.display = 'block';
+  el.style.animation = 'none';
+  void el.offsetWidth;
+  el.style.animation = 'splashFly 1.2s ease-out forwards';
+  setTimeout(() => el.style.display = 'none', 1200);
+}
+
+// Main tap handler
+function handleGameTap(e) {
+  // UI 버튼/패널에서 온 이벤트는 무시
+  let t = e.target;
+  while (t) {
+    const id = t.id || '';
+    const cls = t.className || '';
+    if (['baitSelector','docanBtn','docanOverlay','fishDetailOverlay',
+         'celebrationOverlay','completionBanner','biteAlert','timingBar'].includes(id)) return;
+    if (typeof cls === 'string' && (
+      cls.includes('baitBtn') || cls.includes('backBtn') ||
+      cls.includes('navBtn') || cls.includes('card-close') || cls.includes('backHomeBtn')
+    )) return;
+    if (t === document.getElementById('fishingScreen')) break;
+    t = t.parentElement;
+    if (!t) break;
+  }
+
+  if (e.type === 'touchstart') e.preventDefault();
+
+  if (fishingPhase === 'idle') {
+    if (!isWater(e)) {
+      playError(); showErrorFlash();
+      setStatus('강물 위를 터치해서 캐스팅하세요!');
+      return;
+    }
+    doCasting(e);
+
+  } else if (fishingPhase === 'waiting') {
+    // ignore taps while waiting
+    setStatus('입질을 기다리세요...');
+
+  } else if (fishingPhase === 'biting') {
+    // Player caught the bite!
+    clearTimeout(biteCountdown);
+    document.getElementById('biteAlert').style.display = 'none';
+    document.getElementById('fishShadow').querySelector && '';
+    startTimingGame();
+
+  } else if (fishingPhase === 'timing') {
+    // Stop red marker
+    clearInterval(timingInterval);
+    timingInterval = null;
+    vibrate(50); // 타이밍 멈춤 - 짧게 한 번
+    evaluateTiming();
+
+  } else if (fishingPhase === 'reeling') {
+    // do nothing
+  }
+}
+
+function doCasting(e) {
+  fishingPhase = 'casting';
+  const pos = getRelativePos(e);
+  bobberX = pos.x;
+  bobberY = pos.y;
+
+  setStatus('낚시 중...');
+  setBaitLocked(true);
+
+  // 낚싯대 캐스팅 모션
+  const rodWrap = document.getElementById('fishingRodWrap');
+  rodWrap.classList.remove('returning');
+  rodWrap.classList.add('casting');
+
+  // 모션 중 줄/찌 숨김
+  drawRodLine(null, null);
+  document.getElementById('bobber').style.display = 'none';
+
+  // 0.35초 후(앞으로 휙 완료 시점)에 찌 등장 + 줄 연결
+  setTimeout(() => {
+    playCast();
+    // 찌 표시
+    const bobber = document.getElementById('bobber');
+    bobber.style.display = 'block';
+    bobber.style.left = (bobberX - 10) + 'px';
+    bobber.style.top  = (bobberY - 20) + 'px';
+    bobber.className = '';
+
+    // 줄 연결
+    drawRodLine(bobberX, bobberY);
+
+    // 물 튀김
+    playSplash();
+    showSplash(bobberX, bobberY);
+
+    // 찌 둥실거림 시작
+    setTimeout(() => bobber.classList.add('bobbing'), 200);
+
+    // 낚싯대 복귀 모션
+    rodWrap.classList.remove('casting');
+    rodWrap.classList.add('returning');
+    setTimeout(() => rodWrap.classList.remove('returning'), 400);
+
+  }, 350);
+
+  bobberVisible = true;
+
+  // 물고기 그림자
+  const shadow = document.getElementById('fishShadow');
+  shadow.style.display = 'block';
+  shadow.style.left = (bobberX - 24 + (Math.random() * 30 - 15)) + 'px';
+  shadow.style.top  = (bobberY + 20 + (Math.random() * 20)) + 'px';
+
+  // 입질 대기
+  const waitTime = 1000 + Math.random() * 3000;
+  fishingPhase = 'waiting';
+  setStatus('입질을 기다리세요...');
+
+  biteTimer = setTimeout(() => {
+    triggerBite();
+  }, waitTime);
+}
+
+function triggerBite() {
+  fishingPhase = 'biting';
+  playBite();
+
+  const bobber = document.getElementById('bobber');
+  bobber.className = 'biting';
+
+  const alert = document.getElementById('biteAlert');
+  alert.style.display = 'block';
+
+  setStatus('화면을 빠르게 터치하세요!');
+
+  // 0.7 second window
+  biteCountdown = setTimeout(() => {
+    // missed
+    bobber.className = '';
+    alert.style.display = 'none';
+    fishingPhase = 'idle';
+    playFail();
+    document.getElementById('fishShadow').style.display = 'none';
+    document.getElementById('bobber').style.display = 'none';
+    drawRodLine(null, null);
+    setBaitLocked(false);
+    // 입질 놓침은 가짜미끼 사용 횟수에 포함 안 됨 - 유지
+    setStatus('놓쳤어요! 다시 캐스팅하세요.');
+  }, 700);
+}
+
+function startTimingGame() {
+  fishingPhase = 'timing';
+  document.getElementById('biteAlert').style.display = 'none';
+
+  // Random difficulty
+  // 속도 구간 확률: 느림(2~4) 30%, 중간(4~6) 50%, 빠름(6~6.5) 20%
+  const speedRoll = Math.random();
+  let markerSpeedRaw;
+  if (speedRoll < 0.30) {
+    markerSpeedRaw = 2.0 + Math.random() * 2.0; // 2.0~4.0
+  } else if (speedRoll < 0.80) {
+    markerSpeedRaw = 4.0 + Math.random() * 2.0; // 4.0~6.0
+  } else {
+    markerSpeedRaw = 6.0 + Math.random() * 0.5; // 6.0~6.5
+  }
+  markerSpeed = markerSpeedRaw;
+
+  // 초록 구간 너비 확률: 좁음(5~10%) 10%, 중간(10~20%) 40%, 넓음(20~30%) 50%
+  const gwRoll = Math.random();
+  let gw;
+  if (gwRoll < 0.10) {
+    gw = 5 + Math.random() * 5;   // 5~10%
+  } else if (gwRoll < 0.50) {
+    gw = 10 + Math.random() * 10; // 10~20%
+  } else {
+    gw = 20 + Math.random() * 10; // 20~30%
+  }
+  const gs = 5 + Math.random() * (90 - gw); // green zone start %
+
+  greenStart = gs;
+  greenWidth = gw;
+  markerPos = 0;
+  markerDir = 1;
+
+  const track = document.getElementById('timingTrack');
+  trackWidth = track.offsetWidth || 320;
+
+  const greenEl = document.getElementById('greenZone');
+  greenEl.style.left = (gs / 100 * trackWidth) + 'px';
+  greenEl.style.width = (gw / 100 * trackWidth) + 'px';
+
+  const redEl = document.getElementById('redMarker');
+  redEl.style.left = '0px';
+
+  const bar = document.getElementById('timingBar');
+  bar.style.display = 'flex';
+
+  setStatus('');
+
+  let tripCount = 0; // 편도 이동 횟수 (2 = 왕복 1회)
+
+  timingInterval = setInterval(() => {
+    markerPos += markerDir * markerSpeed;
+    if (markerPos >= trackWidth - 5) {
+      markerPos = trackWidth - 5;
+      markerDir = -1;
+      tripCount++;
+    }
+    if (markerPos <= 0) {
+      markerPos = 0;
+      markerDir = 1;
+      tripCount++;
+    }
+    redEl.style.left = markerPos + 'px';
+
+    // 왕복 4회(편도 8번) 초과 시 물고기 도망
+    if (tripCount >= 8) {
+      clearInterval(timingInterval);
+      timingInterval = null;
+      document.getElementById('timingBar').style.display = 'none';
+      fishingPhase = 'idle';
+      playFail();
+      document.getElementById('fishShadow').style.display = 'none';
+      document.getElementById('bobber').style.display = 'none';
+      drawRodLine(null, null);
+      setBaitLocked(false);
+      if (state.fakeBaitActive) deactivateFever();
+      setStatus('너무 늦었어요! 물고기가 도망갔어요. 다시 캐스팅하세요.');
+      const shadow = document.getElementById('fishShadow');
+      shadow.style.transition = 'opacity 0.8s, transform 0.8s';
+      shadow.style.transform = 'translateY(40px)';
+      shadow.style.opacity = '0';
+      setTimeout(() => {
+        shadow.style.display = 'none';
+        shadow.style.transform = '';
+        shadow.style.opacity = '';
+        shadow.style.transition = '';
+      }, 800);
+    }
+  }, 16);
+}
+
+function evaluateTiming() {
+  document.getElementById('timingBar').style.display = 'none';
+
+  const greenLeft = greenStart / 100 * trackWidth;
+  const greenRight = greenLeft + greenWidth / 100 * trackWidth;
+  const success = markerPos >= greenLeft && markerPos <= greenRight;
+
+  if (success) {
+    // Reel in
+    fishingPhase = 'reeling';
+    playReel();
+    setStatus('당기는 중...');
+    const bobber = document.getElementById('bobber');
+    bobber.className = '';
+
+    setTimeout(() => {
+      // determine fish
+      const fish = rollFish();
+      currentFishId = fish.id;
+      showFishResult(fish);
+    }, 900);
+
+  } else {
+    // Fail
+    fishingPhase = 'idle';
+    playFail();
+    document.getElementById('fishShadow').style.display = 'none';
+    document.getElementById('bobber').style.display = 'none';
+    drawRodLine(null, null);
+    setBaitLocked(false);
+    if (state.fakeBaitActive) deactivateFever();
+    setStatus('실패! 물고기가 도망갔어요. 다시 캐스팅하세요.');
+    // Show fish escaping
+    const shadow = document.getElementById('fishShadow');
+    shadow.style.transition = 'opacity 0.8s, transform 0.8s';
+    shadow.style.transform = 'translateY(40px)';
+    shadow.style.opacity = '0';
+    setTimeout(() => {
+      shadow.style.display = 'none';
+      shadow.style.transform = '';
+      shadow.style.opacity = '';
+      shadow.style.transition = '';
+    }, 800);
+  }
+}
+
+function updateCatchCounter() {
+  document.getElementById('catchCounter').textContent = `🐟 ${state.totalCaught}마리`;
+  // 가짜미끼 진행도 업데이트
+  const prog = document.getElementById('fakeBaitProgress');
+  if (state.fakeBaitUnlocked) {
+    prog.textContent = '✓';
+  } else {
+    const cur = state.totalCaught % 10;
+    prog.textContent = `${cur}/20`;
+  }
+}
+
+let feverBgmInterval = null;
+let feverBgmNodes = [];
+
+function startFeverBgm() {
+  stopFeverBgm();
+  // C장조 신나는 멜로디 루프
+  const melody = [
+    [523,0.12],[659,0.12],[784,0.12],[1047,0.18],
+    [880,0.12],[784,0.12],[659,0.12],[523,0.18],
+    [659,0.12],[784,0.12],[880,0.12],[1047,0.18],
+    [784,0.12],[659,0.12],[523,0.12],[523,0.25]
+  ];
+  // 베이스 반주
+  const bass = [262,262,330,262,262,330,262,330];
+
+  function playLoop() {
+    try {
+      const ctx = getAudioCtx();
+      let t = ctx.currentTime + 0.05;
+      melody.forEach(([freq, dur]) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.18, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.9);
+        osc.start(t); osc.stop(t + dur);
+        feverBgmNodes.push(osc);
+        t += dur;
+      });
+      // 베이스
+      let bt = ctx.currentTime + 0.05;
+      const beatDur = 0.24;
+      bass.forEach(freq => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.1, bt);
+        gain.gain.exponentialRampToValueAtTime(0.001, bt + beatDur * 0.8);
+        osc.start(bt); osc.stop(bt + beatDur);
+        feverBgmNodes.push(osc);
+        bt += beatDur;
+      });
+    } catch(e) {}
+  }
+
+  playLoop();
+  // 멜로디 총 길이 약 2.05초 - 루프
+  feverBgmInterval = setInterval(playLoop, 2050);
+}
+
+function stopFeverBgm() {
+  if (feverBgmInterval) {
+    clearInterval(feverBgmInterval);
+    feverBgmInterval = null;
+  }
+  feverBgmNodes.forEach(n => { try { n.stop(); } catch(e) {} });
+  feverBgmNodes = [];
+}
+
+function activateFever() {
+  document.getElementById('feverOverlay').classList.add('active');
+  document.getElementById('bait2').classList.remove('locked-bait');
+  document.getElementById('bait2').classList.add('fever-bait', 'selected');
+  document.getElementById('bait0').classList.remove('selected');
+  document.getElementById('bait1').classList.remove('selected');
+  playFeverSound();
+  startFeverBgm();
+  vibrate([100, 50, 100, 50, 100, 50, 200]);
+  setStatus('🐠 새로운 물고기가 잡힐 가능성이 올라가요!');
+}
+
+function deactivateFever() {
+  state.fakeBaitActive = false;
+  state.fakeBaitUnlocked = false;
+  stopFeverBgm();
+  document.getElementById('feverOverlay').classList.remove('active');
+  document.getElementById('bait2').classList.remove('fever-bait', 'selected');
+  document.getElementById('bait2').classList.add('locked-bait');
+  document.getElementById('fakeBaitProgress').textContent =
+    `${state.totalCaught % 10}/10`;
+  selectedBait = 0;
+  document.getElementById('bait0').classList.add('selected');
+}
+
+function playFeverSound() {
+  try {
+    const ctx = getAudioCtx();
+    const notes = [523,659,784,880,1047,880,784,1047,1319];
+    notes.forEach((f, i) => {
+      setTimeout(() => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = f;
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+        osc.start(); osc.stop(ctx.currentTime + 0.18);
+      }, i * 80);
+    });
+  } catch(e) {}
+}
+
+function rollFish() {
+  if (state.fakeBaitActive) {
+    return rollFishFever();
+  }
+  const r = Math.random();
+  let acc = 0;
+  for (const f of FISH_DATA) {
+    acc += f.prob;
+    if (r <= acc) return f;
+  }
+  return FISH_DATA[0];
+}
+
+function rollFishFever() {
+  // 도감에 없는 물고기 중 랜덤 선택
+  const uncaught = FISH_DATA.filter(f => !state.caughtFish.has(f.id));
+  let targetId;
+  if (uncaught.length > 0) {
+    // 미등록 물고기 중 랜덤
+    targetId = uncaught[Math.floor(Math.random() * uncaught.length)].id;
+  } else {
+    // 모두 등록 - 가장 적게 잡은 물고기 (동점이면 가장 최근)
+    let minCount = Infinity;
+    let candidates = [];
+    for (const f of FISH_DATA) {
+      const cnt = state.catchCount[f.id] || 0;
+      if (cnt < minCount) { minCount = cnt; candidates = [f]; }
+      else if (cnt === minCount) { candidates.push(f); }
+    }
+    if (candidates.length === 1) {
+      targetId = candidates[0].id;
+    } else {
+      // 가장 최근에 잡힌 것
+      let maxOrder = -1;
+      let chosen = candidates[0];
+      for (const f of candidates) {
+        const ord = state.catchOrder[f.id] || 0;
+        if (ord > maxOrder) { maxOrder = ord; chosen = f; }
+      }
+      targetId = chosen.id;
+    }
+  }
+  // 확률 구성: 타겟 70%, 나머지 각 5%
+  const r = Math.random();
+  if (r < 0.70) {
+    return FISH_DATA.find(f => f.id === targetId);
+  }
+  // 나머지 물고기 중 랜덤 (균등 5%)
+  const others = FISH_DATA.filter(f => f.id !== targetId);
+  return others[Math.floor(Math.random() * others.length)];
+}
+
+function showFishResult(fish) {
+  document.getElementById('fishShadow').style.display = 'none';
+  document.getElementById('bobber').style.display = 'none';
+  drawRodLine(null, null);
+
+  // 잡은 횟수 기록
+  state.totalCaught++;
+  state.catchCount[fish.id] = (state.catchCount[fish.id] || 0) + 1;
+  state.catchSeq++;
+  state.catchOrder[fish.id] = state.catchSeq;
+
+  // 가짜미끼 사용 후 비활성화
+  const wasFever = state.fakeBaitActive;
+  if (wasFever) deactivateFever();
+
+  // 가짜미끼 해금 체크 (20마리마다)
+  if (!state.fakeBaitUnlocked && state.totalCaught >= state.fakeBaitNextAt) {
+    state.fakeBaitUnlocked = true;
+    state.fakeBaitNextAt = state.totalCaught + 10;
+    setTimeout(() => showFakeBaitAlert(), 800);
+  }
+
+  const isNew = !state.caughtFish.has(fish.id);
+  state.caughtFish.add(fish.id);
+  saveState();
+  updateDocanCount();
+
+  if (isNew) {
+    playCelebration();
+    showCelebration(fish.name);
+    setTimeout(() => {
+      fishingPhase = 'idle';
+      setBaitLocked(false);
+      openFishDetail(fish.id, 'catch');
+    }, 1800);
+  } else {
+    playSuccess();
+    setStatus('이미 잡은 물고기예요!');
+    fishingPhase = 'idle';
+    setBaitLocked(false);
+    openFishDetail(fish.id, 'catch');
+  }
+
+  const allCaught = FISH_DATA.every(f => state.caughtFish.has(f.id));
+  if (allCaught && !state.ch1Complete) {
+    state.ch1Complete = true;
+    saveState();
+    setTimeout(() => {
+      showFishCompletePopup1();
+    }, 3200);
+  }
+}
+
+// =============================
+// 챕터1 완료 축하 팝업
+// =============================
+function showFishCompletePopup1() {
+  playCongrats();
+  const p = document.getElementById('fishCompletePopup1');
+  p.style.display = 'flex';
+  p.onclick = (e) => { if (e.target === p) {} }; // 배경 클릭 막음 (화살표로만 이동)
+}
+
+function showFishComplete2() {
+  document.getElementById('fishCompletePopup1').style.display = 'none';
+  const p = document.getElementById('fishCompletePopup2');
+  p.style.display = 'flex';
+  p.onclick = () => {
+    p.style.display = 'none';
+    updateStartScreen(); // 챕터2 버튼 표시
+  };
+}
+
+function playCongrats() {
+  try {
+    const ctx = getAudioCtx();
+    const melody = [523,659,784,1047,784,659,523,659,784,1047,1319,1047];
+    let t = ctx.currentTime;
+    melody.forEach((f, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = f;
+      gain.gain.setValueAtTime(0.25, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+      osc.start(t); osc.stop(t + 0.22);
+      t += 0.15;
+    });
+  } catch(e) {}
+}
+
+// =============================
+// 챕터2 - 식물 데이터
+// =============================
+const PLANT_DATA = [
+  { id: 'muleoeksae', name: '물억새', img: 'images/물억새.jpg', emoji: '🌾', sci: 'Miscanthus sacchariflorus', desc: '한국의 강가에서 흔히 볼 수 있다. 높이가 2.5m까지 자라는 키가 큰 식물이다. 8~9월에 꽃이 핀다.' },
+  { id: 'beoknamoo', name: '벚나무', img: 'images/벚나무.jpg', emoji: '🌸', sci: 'Prunus serrulata', desc: '벚나무의 꽃은 벚꽃, 열매는 버찌이다. 주로 왕벚나무가 가로수로 심기지만 자연에는 수십종의 벚나무가 있다. 4월의 논산천변에는 벚나무에서 벚꽃이 예쁘게 핀다.' },
+  { id: 'dduksaepul', name: '뚝새풀', img: 'images/뚝새풀.jpg', emoji: '🌱', sci: 'Alopecurus aequalis', desc: '이른 봄에 논이나 습지에서 흔히 볼 수 있다. 여러대가 모여 나면서 다발을 이룬다. 소의 먹이로도 사용된다.' },
+  { id: 'bodeunamoo', name: '버드나무', img: 'images/버드나무.jpg', emoji: '🌿', sci: 'Salix koreensis', desc: '물을 좋아해서 강가에 많이 자란다. 수질을 정화하는 능력이 뛰어나다.' }
+];
+
+// 라운드 카드 구성
+const ROUND_CONFIG = [
+  { round: 1, cards: 6,  plant: 'muleoeksae', icons: ['🌵','🌻'], photoPlants: ['muleoeksae'] },
+  { round: 2, cards: 8,  plant: 'beoknamoo',  icons: ['🌵','🍄'], photoPlants: ['beoknamoo'] },
+  { round: 3, cards: 12, plant: 'dduksaepul', icons: ['🌱','🍃','🌷'], photoPlants: ['beoknamoo','muleoeksae','dduksaepul'] },
+  { round: 4, cards: 16, plant: 'bodeunamoo', icons: ['🍃','🌷','🌹','🍎'], photoPlants: ['dduksaepul','muleoeksae','beoknamoo','bodeunamoo'] }
+];
+
+let currentCardGame = { flipped: [], matched: [], cards: [], locked: false };
+let currentPlantDetailIdx = 0;
+
+// =============================
+// 챕터2 진입
+// =============================
+function enterChapter2() {
+  showScreen('chapter2Screen');
+  updatePlantDocanCount();
+  startRound(state.currentRound);
+}
+
+function startRound(roundNum) {
+  const cfg = ROUND_CONFIG[roundNum - 1];
+  if (!cfg) return;
+  document.getElementById('roundLabel').textContent = `🃏 라운드 ${roundNum}`;
+  currentCardGame = { flipped: [], matched: [], cards: [], locked: false };
+  buildCardGame(cfg);
+}
+
+function buildCardGame(cfg) {
+  const area = document.getElementById('cardGameArea');
+  area.innerHTML = '';
+
+  // 카드 쌍 구성
+  const pairs = [];
+  cfg.icons.forEach(icon => pairs.push({ type: 'icon', value: icon }));
+  cfg.photoPlants.forEach(pid => pairs.push({ type: 'photo', value: pid }));
+
+  // 각 쌍을 2장씩
+  const deck = [];
+  pairs.forEach((p, i) => {
+    deck.push({ ...p, pairId: i, cardId: i * 2 });
+    deck.push({ ...p, pairId: i, cardId: i * 2 + 1 });
+  });
+
+  // 셔플
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+
+  currentCardGame.cards = deck;
+
+  // 그리드 열 수 결정
+  const cols = cfg.cards <= 6 ? 3 : cfg.cards <= 8 ? 4 : cfg.cards <= 12 ? 4 : 4;
+  area.style.maxWidth = (cols * 90 + (cols - 1) * 10 + 20) + 'px';
+
+  deck.forEach((card, idx) => {
+    const el = document.createElement('div');
+    el.style.cssText = `
+      width:80px;height:100px;border-radius:10px;border:2px solid #8b6340;
+      background:#fff8e8;cursor:pointer;display:flex;align-items:center;
+      justify-content:center;font-size:44px;position:relative;
+      box-shadow:0 3px 10px rgba(0,0,0,0.2);transition:transform 0.15s;
+      user-select:none;
+    `;
+    el.dataset.idx = idx;
+
+    // 뒷면
+    const back = document.createElement('div');
+    back.style.cssText = 'position:absolute;inset:0;border-radius:8px;background:linear-gradient(135deg,#5a8c3c,#7ab648);display:flex;align-items:center;justify-content:center;font-size:30px;';
+    back.textContent = '🌿';
+    el.appendChild(back);
+
+    // 앞면
+    const front = document.createElement('div');
+    front.style.cssText = 'position:absolute;inset:0;border-radius:8px;display:none;align-items:center;justify-content:center;overflow:hidden;';
+    if (card.type === 'icon') {
+      front.style.fontSize = '52px';
+      front.textContent = card.value;
+    } else {
+      const plant = PLANT_DATA.find(p => p.id === card.value);
+      const img = document.createElement('img');
+      img.src = `images/${plant.name}.jpg`;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:8px;';
+      front.appendChild(img);
+    }
+    el.appendChild(front);
+
+    el.onclick = () => flipCard(idx, el, back, front);
+    area.appendChild(el);
+  });
+}
+
+function flipCard(idx, el, back, front) {
+  if (currentCardGame.locked) return;
+  if (currentCardGame.matched.includes(idx)) return;
+  if (currentCardGame.flipped.includes(idx)) return;
+  if (currentCardGame.flipped.length >= 2) return;
+
+  // 앞면 보이기
+  back.style.display = 'none';
+  front.style.display = 'flex';
+  currentCardGame.flipped.push(idx);
+  playBeep(523, 0.1, 'sine', 0.2);
+
+  if (currentCardGame.flipped.length === 2) {
+    currentCardGame.locked = true;
+    const [i1, i2] = currentCardGame.flipped;
+    const c1 = currentCardGame.cards[i1];
+    const c2 = currentCardGame.cards[i2];
+
+    if (c1.pairId === c2.pairId) {
+      // 매칭 성공
+      currentCardGame.matched.push(i1, i2);
+      currentCardGame.flipped = [];
+      currentCardGame.locked = false;
+      playBeep(784, 0.15, 'sine', 0.25);
+
+      // 모두 매칭됐으면 클리어
+      if (currentCardGame.matched.length === currentCardGame.cards.length) {
+        setTimeout(() => roundClear(), 400);
+      }
+    } else {
+      // 매칭 실패 - 뒤집기
+      setTimeout(() => {
+        const els = document.getElementById('cardGameArea').children;
+        [i1, i2].forEach(i => {
+          const e = els[i];
+          e.querySelector('div:first-child').style.display = 'flex'; // back
+          e.querySelectorAll('div')[1].style.display = 'none'; // front
+        });
+        currentCardGame.flipped = [];
+        currentCardGame.locked = false;
+        playBeep(300, 0.12, 'sawtooth', 0.2);
+        vibrate(80); // 매칭 실패 진동
+      }, 900);
+    }
+  }
+}
+
+function roundClear() {
+  const cfg = ROUND_CONFIG[state.currentRound - 1];
+  const plant = PLANT_DATA.find(p => p.id === cfg.plant);
+  const isLastRound = state.unlockedPlants.size + 1 >= PLANT_DATA.length;
+
+  // 식물 해금
+  state.unlockedPlants.add(plant.id);
+  if (state.currentRound < ROUND_CONFIG.length) state.currentRound++;
+  saveState();
+  updatePlantDocanCount();
+
+  playSuccess();
+  vibrate([100, 50, 200]);
+
+  // 도감 직접 표시 (source: 'roundclear' - 닫으면 다음 라운드 or 완료)
+  setTimeout(() => {
+    openPlantDetail(plant.id, isLastRound ? 'lastround' : 'roundclear');
+  }, 400);
+}
+
+function nextRound() {
+  document.getElementById('roundClearPopup').style.display = 'none';
+  if (state.currentRound > ROUND_CONFIG.length) {
+    document.getElementById('ch2CompleteBanner').style.display = 'flex';
+    return;
+  }
+  startRound(state.currentRound);
+}
+
+// =============================
+// 식물 도감
+// =============================
+function updatePlantDocanCount() {
+  const count = state.unlockedPlants.size;
+  const el = document.getElementById('plantDocanCount');
+  if (el) el.textContent = `${count}/4`;
+  const hel = document.getElementById('plantDocanHeaderCount');
+  if (hel) hel.textContent = `${count} / 4`;
+}
+
+function openPlantDocan() {
+  buildPlantDocanPages();
+  const ov = document.getElementById('plantDocanOverlay');
+  ov.style.display = 'flex';
+}
+
+function closePlantDocan() {
+  document.getElementById('plantDocanOverlay').style.display = 'none';
+}
+
+function buildPlantDocanPages() {
+  const container = document.getElementById('plantDocanPages');
+  container.innerHTML = '';
+  PLANT_DATA.forEach((plant, idx) => {
+    const unlocked = state.unlockedPlants.has(plant.id);
+    const tile = document.createElement('div');
+    tile.style.cssText = `background:white;border:2px solid #c8985a;border-radius:10px;padding:12px;text-align:center;cursor:${unlocked?'pointer':'default'};min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;opacity:${unlocked?1:0.55};`;
+    tile.innerHTML = `
+      <div style="font-size:32px;">${unlocked ? plant.emoji : '🌿'}</div>
+      <div style="font-family:'Georgia','Batang',serif;font-size:13px;font-weight:700;color:${unlocked?'#1a3a1a':'#aaa'};">${unlocked ? plant.name : '???'}</div>
+    `;
+    if (unlocked) {
+      tile.onclick = () => { closePlantDocan(); openPlantDetail(plant.id, 'docan'); };
+    }
+    container.appendChild(tile);
+  });
+}
+
+function openPlantDetail(plantId, source) {
+  currentPlantDetailIdx = PLANT_DATA.findIndex(p => p.id === plantId);
+  renderPlantDetail(currentPlantDetailIdx);
+  document.getElementById('plantDetailOverlay').style.display = 'flex';
+  // source 저장
+  document.getElementById('plantDetailOverlay').dataset.source = source || 'game';
+}
+
+function closePlantDetail() {
+  const overlay = document.getElementById('plantDetailOverlay');
+  const source = overlay.dataset.source;
+  overlay.style.display = 'none';
+
+  if (source === 'docan') {
+    openPlantDocan();
+  } else if (source === 'roundclear') {
+    // 다음 라운드 시작
+    if (state.currentRound <= ROUND_CONFIG.length) {
+      startRound(state.currentRound);
+    } else {
+      document.getElementById('ch2CompleteBanner').style.display = 'flex';
+    }
+  } else if (source === 'lastround') {
+    // 마지막 라운드 - 완료 배너
+    state.ch2Complete = true;
+    saveState();
+    document.getElementById('ch2CompleteBanner').style.display = 'flex';
+  }
+}
+
+function renderPlantDetail(idx) {
+  const plant = PLANT_DATA[idx];
+  const unlocked = state.unlockedPlants.has(plant.id);
+  document.getElementById('plantDetailTitle').textContent = unlocked ? plant.name + ' 정보' : '???';
+  document.getElementById('plantDetailName').textContent = unlocked ? plant.name : '???';
+  document.getElementById('plantDetailSci').textContent = unlocked ? plant.sci : '';
+  document.getElementById('plantDetailDesc').textContent = unlocked ? plant.desc : '';
+  document.getElementById('plantCardPageInfo').textContent = `${idx+1} / ${PLANT_DATA.length}`;
+
+  const imgEl = document.getElementById('plantDetailImg');
+  const emojiEl = document.getElementById('plantDetailEmoji');
+  if (unlocked && plant.img) {
+    imgEl.src = plant.img;
+    imgEl.style.display = 'block';
+    emojiEl.style.display = 'none';
+  } else {
+    imgEl.src = '';
+    imgEl.style.display = 'none';
+    emojiEl.style.display = 'block';
+    emojiEl.textContent = unlocked ? plant.emoji : '🌿';
+  }
+  document.getElementById('prevPlantBtn').disabled = (idx === 0);
+  document.getElementById('nextPlantBtn').disabled = (idx === PLANT_DATA.length - 1);
+}
+
+function navigatePlantCard(dir) {
+  const newIdx = currentPlantDetailIdx + dir;
+  if (newIdx < 0 || newIdx >= PLANT_DATA.length) return;
+  currentPlantDetailIdx = newIdx;
+  renderPlantDetail(newIdx);
+}
+
+function showFakeBaitAlert() {
+  const el = document.getElementById('fakeBaitAlert');
+  el.classList.add('show');
+  vibrate([100,50,100,50,100,50,200]);
+  playFeverSound();
+  document.getElementById('bait2').classList.remove('locked-bait');
+  document.getElementById('bait2').classList.add('fever-bait');
+  document.getElementById('fakeBaitProgress').textContent = '✓';
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+function playCelebration() {
+  playNewFish();
+}
+
+function showCelebration(name) {
+  const overlay = document.getElementById('celebrationOverlay');
+  overlay.classList.add('active');
+
+  const banner = document.getElementById('newFishBanner');
+  document.getElementById('newFishName').textContent = name + ' 발견!';
+
+  // Confetti
+  for (let i = 0; i < 40; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    const colors = ['#f5c842','#4caf50','#2196f3','#e91e63','#ff5722','#9c27b0'];
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.left = Math.random() * 100 + '%';
+    c.style.top = '-20px';
+    c.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+    c.style.animationDelay = (Math.random() * 0.8) + 's';
+    overlay.appendChild(c);
+  }
+
+  setTimeout(() => banner.classList.add('show'), 100);
+
+  setTimeout(() => {
+    banner.classList.remove('show');
+    overlay.classList.remove('active');
+    // remove confetti
+    overlay.querySelectorAll('.confetti').forEach(c => c.remove());
+  }, 1700);
+}
+
+// =============================
+// DOCAN (도감)
+// =============================
+function updateDocanCount() {
+  const count = state.caughtFish.size;
+  document.getElementById('docanCount').textContent = count + '/7';
+  updateCatchCounter();
+}
+
+function openDocan() {
+  buildDocanPages();
+  document.getElementById('docanOverlay').classList.add('active');
+  document.getElementById('docanHeaderCount').textContent = state.caughtFish.size + ' / 7';
+}
+
+function closeDocan() {
+  document.getElementById('docanOverlay').classList.remove('active');
+}
+
+function buildDocanPages() {
+  const container = document.getElementById('docanPages');
+  container.innerHTML = '';
+  FISH_DATA.forEach((fish, idx) => {
+    const unlocked = state.caughtFish.has(fish.id);
+    const tile = document.createElement('div');
+    tile.className = 'docanTile' + (unlocked ? '' : ' locked');
+    tile.innerHTML = `
+      <div class="tile-icon">${unlocked ? fish.emoji : '🐟'}</div>
+      <div class="tile-name">${unlocked ? fish.name : '???'}</div>
+    `;
+    if (unlocked) {
+      tile.onclick = () => {
+        closeDocan();
+        openFishDetail(fish.id, 'docan');
+      };
+    }
+    container.appendChild(tile);
+  });
+}
+
+// =============================
+// FISH DETAIL
+// =============================
+function openFishDetail(fishId, source) {
+  detailSource = source;
+  currentDetailIndex = FISH_DATA.findIndex(f => f.id === fishId);
+  renderDetail(currentDetailIndex);
+  document.getElementById('fishDetailOverlay').classList.add('active');
+}
+
+function closeDetail() {
+  document.getElementById('fishDetailOverlay').classList.remove('active');
+  if (detailSource === 'docan') {
+    openDocan();
+  }
+  setStatus('다시 캐스팅하세요!');
+}
+
+function renderDetail(idx) {
+  const fish = FISH_DATA[idx];
+  const unlocked = state.caughtFish.has(fish.id);
+
+  document.getElementById('detailTitle').textContent = unlocked ? fish.name + ' 정보' : '???';
+  document.getElementById('detailName').textContent = unlocked ? fish.name : '???';
+  document.getElementById('detailSci').textContent = unlocked ? fish.sci : '';
+  document.getElementById('detailDesc').textContent = unlocked ? fish.desc : '';
+  document.getElementById('cardPageInfo').textContent = (idx + 1) + ' / ' + FISH_DATA.length;
+
+  // 이미지 처리: 사진이 있으면 img, 없으면 이모지
+  const imgEl = document.getElementById('detailImg');
+  const emojiEl = document.getElementById('detailImgEmoji');
+  if (unlocked && fish.img) {
+    imgEl.src = fish.img;
+    imgEl.style.display = 'block';
+    emojiEl.style.display = 'none';
+  } else {
+    imgEl.src = '';
+    imgEl.style.display = 'none';
+    emojiEl.style.display = 'block';
+    emojiEl.textContent = unlocked ? fish.emoji : '🐟';
+  }
+
+  document.getElementById('prevCardBtn').disabled = (idx === 0);
+  document.getElementById('nextCardBtn').disabled = (idx === FISH_DATA.length - 1);
+}
+
+function navigateCard(dir) {
+  const newIdx = currentDetailIndex + dir;
+  if (newIdx < 0 || newIdx >= FISH_DATA.length) return;
+  currentDetailIndex = newIdx;
+  renderDetail(newIdx);
+}
+
+// =============================
+// EVENT LISTENERS
+// =============================
+document.addEventListener('DOMContentLoaded', () => {
+  updateStartScreen();
+  updateDocanCount();
+
+  const fishingScreen = document.getElementById('fishingScreen');
+
+  // UI 요소들 - pointer-events 완전 분리, 클릭만 처리
+  const uiSelectors = '#baitSelector, #docanBtn, .backBtn, #docanOverlay, #fishDetailOverlay, #celebrationOverlay, #completionBanner';
+  document.querySelectorAll(uiSelectors).forEach(el => {
+    el.addEventListener('click', e => e.stopPropagation());
+    el.addEventListener('touchend', e => e.stopPropagation());
+    el.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
+  });
+
+  // 낚시 화면 — 마우스 클릭
+  fishingScreen.addEventListener('click', handleGameTap);
+
+  // 낚시 화면 — 터치 (touchstart만 사용, click 이벤트와 중복 방지)
+  let lastTouchHandled = false;
+  fishingScreen.addEventListener('touchstart', (e) => {
+    lastTouchHandled = true;
+    handleGameTap(e);
+  }, { passive: false });
+
+  // touchstart 후 발생하는 click 이벤트 중복 방지
+  fishingScreen.addEventListener('click', (e) => {
+    if (lastTouchHandled) { lastTouchHandled = false; return; }
+  });
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Space' && document.getElementById('fishingScreen').classList.contains('active')) {
+      e.preventDefault();
+      handleGameTap({ type: 'keydown',
+        touches: [{ clientX: bobberX || 500, clientY: bobberY || 400 }],
+        clientX: bobberX || 500, clientY: bobberY || 400,
+        target: fishingScreen });
+    }
+  });
+
+  // Resize
+  window.addEventListener('resize', () => {
+    if (bobberVisible) drawRodLine(bobberX, bobberY);
+    else drawRodLine(null, null);
+  });
+});
+</script>
+</body>
+</html>
