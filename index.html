@@ -529,6 +529,11 @@
     margin-top: 1px;
   }
 
+  @keyframes roundPopIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
   /* Bait selector */
   #baitSelector {
     position: absolute;
@@ -1491,7 +1496,7 @@
 
     <!-- 도감 버튼 -->
     <button id="plantDocanBtn" onclick="openPlantDocan()" style="position:absolute;top:12px;right:12px;background:rgba(255,251,225,0.92);border:2px solid #8b6340;border-radius:10px;padding:8px 14px;font-family:'Georgia','Batang',serif;font-size:13px;color:#1a3a1a;cursor:pointer;z-index:100;display:flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,0.25);">
-      🌿 도감 <span id="plantDocanCount">0/4</span>
+      🌿 도감 <span id="plantDocanCount">0/6</span>
     </button>
 
     <!-- 라운드 표시 -->
@@ -1501,6 +1506,13 @@
 
     <!-- 카드 게임 영역 -->
     <div id="cardGameArea" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px;max-width:95%;padding:10px;"></div>
+
+    <!-- 라운드 시작 팝업 -->
+    <div id="roundStartPopup" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.45);z-index:350;align-items:center;justify-content:center;pointer-events:none;">
+      <div style="background:rgba(255,251,225,0.97);border:3px solid #5a8c3c;border-radius:16px;padding:22px 48px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:roundPopIn 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+        <div id="roundStartText" style="font-family:'Georgia','Batang',serif;font-size:26px;font-weight:700;color:#1a3a1a;letter-spacing:3px;">1라운드 시작!</div>
+      </div>
+    </div>
 
     <!-- 라운드 클리어 팝업 -->
     <div id="roundClearPopup" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.6);z-index:400;align-items:center;justify-content:center;">
@@ -1528,7 +1540,7 @@
     <div style="background:#fdf6e3;border:3px solid #8b6340;border-radius:14px;width:90%;max-width:680px;max-height:85vh;box-shadow:0 12px 48px rgba(0,0,0,0.5);display:flex;flex-direction:column;overflow:hidden;">
       <div style="background:#8b6340;color:#fdf6e3;font-family:'Georgia','Batang',serif;font-size:18px;font-weight:700;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;letter-spacing:3px;">
         <span>🌿 식물 도감</span>
-        <span id="plantDocanHeaderCount" style="font-size:14px;">0 / 4</span>
+        <span id="plantDocanHeaderCount" style="font-size:14px;">0 / 6</span>
         <button onclick="closePlantDocan()" style="background:none;border:none;color:#fdf6e3;font-size:24px;cursor:pointer;">✕</button>
       </div>
       <div id="plantDocanPages" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:16px;overflow-y:auto;flex:1;"></div>
@@ -1558,7 +1570,7 @@
       </div>
       <div style="display:flex;justify-content:center;gap:12px;padding:10px;border-top:1px solid #c8985a;background:#fdf6e3;">
         <button onclick="navigatePlantCard(-1)" id="prevPlantBtn" style="background:#8b6340;border:none;color:#fdf6e3;font-family:'Georgia','Batang',serif;font-size:14px;padding:6px 18px;border-radius:6px;cursor:pointer;">◀ 이전</button>
-        <span id="plantCardPageInfo" style="font-size:13px;color:#888;align-self:center;">1 / 4</span>
+        <span id="plantCardPageInfo" style="font-size:13px;color:#888;align-self:center;">1 / 6</span>
         <button onclick="navigatePlantCard(1)" id="nextPlantBtn" style="background:#8b6340;border:none;color:#fdf6e3;font-family:'Georgia','Batang',serif;font-size:14px;padding:6px 18px;border-radius:6px;cursor:pointer;">다음 ▶</button>
       </div>
     </div>
@@ -2528,7 +2540,9 @@ const PLANT_DATA = [
   { id: 'muleoeksae', name: '물억새', img: 'images/물억새.jpg', emoji: '🌾', sci: 'Miscanthus sacchariflorus', desc: '한국의 강가에서 흔히 볼 수 있다. 높이가 2.5m까지 자라는 키가 큰 식물이다. 8~9월에 꽃이 핀다.' },
   { id: 'beoknamoo', name: '벚나무', img: 'images/벚나무.jpg', emoji: '🌸', sci: 'Prunus serrulata', desc: '벚나무의 꽃은 벚꽃, 열매는 버찌이다. 주로 왕벚나무가 가로수로 심기지만 자연에는 수십종의 벚나무가 있다. 4월의 논산천변에는 벚나무에서 벚꽃이 예쁘게 핀다.' },
   { id: 'dduksaepul', name: '뚝새풀', img: 'images/뚝새풀.jpg', emoji: '🌱', sci: 'Alopecurus aequalis', desc: '이른 봄에 논이나 습지에서 흔히 볼 수 있다. 여러대가 모여 나면서 다발을 이룬다. 소의 먹이로도 사용된다.' },
-  { id: 'bodeunamoo', name: '버드나무', img: 'images/버드나무.jpg', emoji: '🌿', sci: 'Salix koreensis', desc: '물을 좋아해서 강가에 많이 자란다. 수질을 정화하는 능력이 뛰어나다.' }
+  { id: 'bodeunamoo', name: '버드나무', img: 'images/버드나무.jpg', emoji: '🌿', sci: 'Salix koreensis', desc: '물을 좋아해서 강가에 많이 자란다. 수질을 정화하는 능력이 뛰어나다.' },
+  { id: 'oriyeon', name: '어리연', img: 'images/어리연.jpg', emoji: '🌼', sci: 'Nymphoides indica', desc: '깊이가 얕고 고여있는 물에서 자란다. 물이 고인 깊이에 맞게 줄기 길이가 자란다. 관상용으로도 쓰인다.' },
+  { id: 'budeul', name: '부들', img: 'images/부들.jpg', emoji: '🌿', sci: 'Typha orientalis', desc: '습지와 하천의 가장자리에서 자라는 물가식물이다. 열매는 7~10cm 길이의 적갈색 핫도그와 같은 형태인데 씨앗에 달린 털로 뭉쳐져 있다.' }
 ];
 
 // 라운드 카드 구성
@@ -2536,7 +2550,9 @@ const ROUND_CONFIG = [
   { round: 1, cards: 6,  plant: 'muleoeksae', icons: ['🌵','🌻'], photoPlants: ['muleoeksae'] },
   { round: 2, cards: 8,  plant: 'beoknamoo',  icons: ['🌵','🍄'], photoPlants: ['beoknamoo'] },
   { round: 3, cards: 12, plant: 'dduksaepul', icons: ['🌱','🍃','🌷'], photoPlants: ['beoknamoo','muleoeksae','dduksaepul'] },
-  { round: 4, cards: 16, plant: 'bodeunamoo', icons: ['🍃','🌷','🌹','🍎'], photoPlants: ['dduksaepul','muleoeksae','beoknamoo','bodeunamoo'] }
+  { round: 4, cards: 16, plant: 'bodeunamoo', icons: ['🍃','🌷','🌹','🍎'], photoPlants: ['dduksaepul','muleoeksae','beoknamoo','bodeunamoo'] },
+  { round: 5, cards: 16, plant: 'oriyeon',    icons: ['🍃','🌷','🍂'], photoPlants: ['dduksaepul','muleoeksae','beoknamoo','bodeunamoo','oriyeon'] },
+  { round: 6, cards: 16, plant: 'budeul',     icons: ['🍃','🍂'], photoPlants: ['dduksaepul','muleoeksae','beoknamoo','bodeunamoo','oriyeon','budeul'] }
 ];
 
 let currentCardGame = { flipped: [], matched: [], cards: [], locked: false };
@@ -2555,7 +2571,17 @@ function startRound(roundNum) {
   const cfg = ROUND_CONFIG[roundNum - 1];
   if (!cfg) return;
   document.getElementById('roundLabel').textContent = `🃏 라운드 ${roundNum}`;
-  currentCardGame = { flipped: [], matched: [], cards: [], locked: false };
+  currentCardGame = { flipped: [], matched: [], cards: [], locked: true };
+
+  // 라운드 시작 팝업 표시
+  const popup = document.getElementById('roundStartPopup');
+  document.getElementById('roundStartText').textContent = `${roundNum}라운드 시작!`;
+  popup.style.display = 'flex';
+  setTimeout(() => {
+    popup.style.display = 'none';
+    currentCardGame.locked = false;
+  }, 1200);
+
   buildCardGame(cfg);
 }
 
@@ -2706,9 +2732,9 @@ function nextRound() {
 function updatePlantDocanCount() {
   const count = state.unlockedPlants.size;
   const el = document.getElementById('plantDocanCount');
-  if (el) el.textContent = `${count}/4`;
+  if (el) el.textContent = `${count}/6`;
   const hel = document.getElementById('plantDocanHeaderCount');
-  if (hel) hel.textContent = `${count} / 4`;
+  if (hel) hel.textContent = `${count} / 6`;
 }
 
 function openPlantDocan() {
