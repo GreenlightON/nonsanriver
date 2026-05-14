@@ -254,14 +254,34 @@
   /* Bird animation */
   .bird {
     position: absolute;
-    font-size: 20px;
-    animation: birdFly 12s linear infinite;
     z-index: 5;
+    pointer-events: none;
   }
 
-  @keyframes birdFly {
-    0% { left: -5%; top: 15%; }
-    100% { left: 110%; top: 8%; }
+  #bird1 {
+    position: absolute;
+    font-size: 22px;
+    top: 13%;
+    z-index: 5;
+    pointer-events: none;
+    animation: birdFlyRTL 14s linear infinite;
+  }
+
+  #bird2 {
+    position: absolute;
+    font-size: 14px;
+    top: 20%;
+    z-index: 5;
+    pointer-events: none;
+    left: 110%;
+    animation: birdFlyRTL 18s linear infinite;
+    animation-delay: 8s;
+  }
+
+  @keyframes birdFlyRTL {
+    0%   { left: 110%; opacity: 1; }
+    99%  { left: -8%;  opacity: 1; }
+    100% { left: -8%;  opacity: 0; }
   }
 
   /* ===== FISHING SCREEN ===== */
@@ -335,12 +355,12 @@
   /* ===== FISHING ROD (SVG) ===== */
   #fishingRodWrap {
     position: absolute;
-    top: 24%;
-    left: 5%;
+    top: 22%;
+    left: 4%;
     z-index: 16;
     pointer-events: none;
-    width: 180px;
-    height: 220px;
+    width: 130px;
+    height: 150px;
     transform-origin: bottom left;
   }
 
@@ -1208,8 +1228,9 @@
     </div>
 
     <!-- Bird -->
-    <div class="bird" style="animation-duration:14s">🐦</div>
-    <div class="bird" style="animation-duration:18s;animation-delay:6s;font-size:14px;top:20%">🐦</div>
+    <div id="bird1">🐦</div>
+    <div id="bird2" style="visibility:hidden;">🐦</div>
+    <script>setTimeout(()=>{ const b=document.getElementById('bird2'); if(b) b.style.visibility='visible'; }, 8000);</script>
 
     <!-- Title -->
     <div id="titlePanel">
@@ -1277,36 +1298,53 @@
       <div class="grass-tuft" style="right:10%;height:14px"></div>
     </div>
 
-    <!-- Water (clickable) -->
+    <!-- 바위 (낚싯대 받침 아래) -->
+    <div id="rockBase" style="position:absolute;left:1%;top:31%;z-index:14;pointer-events:none;">
+      <svg width="145" height="72" viewBox="0 0 145 72" overflow="visible">
+        <!-- 큰 바위 -->
+        <ellipse cx="65" cy="54" rx="63" ry="26" fill="#7a7060"/>
+        <ellipse cx="65" cy="50" rx="60" ry="24" fill="#8a8070"/>
+        <!-- 바위 하이라이트 -->
+        <ellipse cx="48" cy="40" rx="26" ry="8" fill="rgba(255,255,255,0.12)"/>
+        <!-- 작은 바위 -->
+        <ellipse cx="120" cy="60" rx="24" ry="14" fill="#6a6055"/>
+        <ellipse cx="120" cy="56" rx="22" ry="12" fill="#7a7065"/>
+        <!-- 이끼 -->
+        <ellipse cx="36" cy="45" rx="10" ry="5" fill="rgba(80,120,60,0.35)"/>
+        <ellipse cx="84" cy="43" rx="7"  ry="4" fill="rgba(80,120,60,0.25)"/>
+      </svg>
+    </div>
+
+    <!-- 물 (clickable) -->
     <div id="fishingWater">
       <div class="waterShimmer"></div>
     </div>
 
     <!-- Rod (SVG) -->
     <div id="fishingRodWrap">
-      <svg id="rodSvg" viewBox="0 0 180 220" overflow="visible">
-        <!-- 릴 받침대 -->
-        <rect x="60" y="195" width="30" height="14" rx="4" fill="#5D2E0C"/>
-        <!-- 릴 -->
-        <ellipse cx="75" cy="195" rx="14" ry="10" fill="#888" stroke="#555" stroke-width="1.5"/>
-        <ellipse cx="75" cy="195" rx="7" ry="5" fill="#aaa"/>
-        <!-- 낚싯대 몸체 (굵은 하단 → 가는 상단) -->
-        <line id="rodShaft" x1="75" y1="205" x2="115" y2="30"
+      <svg id="rodSvg" viewBox="0 0 160 200" overflow="visible">
+        <!-- 낚싯대 몸체 (하단 받침 → 상단 끝) -->
+        <line id="rodShaft" x1="60" y1="190" x2="130" y2="8"
           stroke="url(#rodGrad)" stroke-width="5" stroke-linecap="round"/>
-        <line x1="75" y1="205" x2="115" y2="30"
+        <line x1="60" y1="190" x2="130" y2="8"
           stroke="url(#rodGrad2)" stroke-width="2" stroke-linecap="round"/>
         <!-- 가이드 링 3개 -->
-        <circle cx="109" cy="52"  r="3.5" fill="none" stroke="#aaa" stroke-width="1.5"/>
-        <circle cx="103" cy="80"  r="3"   fill="none" stroke="#aaa" stroke-width="1.5"/>
-        <circle cx="96"  cy="112" r="2.5" fill="none" stroke="#aaa" stroke-width="1.5"/>
-        <!-- 낚싯대 끝 표시 (줄 연결점) -->
-        <circle id="rodTipDot" cx="115" cy="30" r="2" fill="#ffcc00"/>
+        <circle cx="123" cy="38"  r="3.5" fill="none" stroke="#aaa" stroke-width="1.5"/>
+        <circle cx="112" cy="70"  r="3"   fill="none" stroke="#aaa" stroke-width="1.5"/>
+        <circle cx="100" cy="108" r="2.5" fill="none" stroke="#aaa" stroke-width="1.5"/>
+        <!-- 릴 받침대 -->
+        <rect x="44" y="182" width="30" height="12" rx="4" fill="#5D2E0C"/>
+        <!-- 릴 -->
+        <ellipse cx="59" cy="182" rx="13" ry="9" fill="#888" stroke="#555" stroke-width="1.5"/>
+        <ellipse cx="59" cy="182" rx="6"  ry="4" fill="#aaa"/>
+        <!-- 낚싯대 끝 연결점 -->
+        <circle id="rodTipDot" cx="130" cy="8" r="2" fill="#ffcc00"/>
         <defs>
-          <linearGradient id="rodGrad" x1="75" y1="205" x2="115" y2="30" gradientUnits="userSpaceOnUse">
+          <linearGradient id="rodGrad" x1="60" y1="190" x2="130" y2="8" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stop-color="#6B3310"/>
             <stop offset="100%" stop-color="#A0522D"/>
           </linearGradient>
-          <linearGradient id="rodGrad2" x1="75" y1="205" x2="115" y2="30" gradientUnits="userSpaceOnUse">
+          <linearGradient id="rodGrad2" x1="60" y1="190" x2="130" y2="8" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stop-color="rgba(255,200,150,0.0)"/>
             <stop offset="100%" stop-color="rgba(255,200,150,0.25)"/>
           </linearGradient>
@@ -1525,6 +1563,25 @@
     </div>
 
     <!-- 챕터2 완료 -->
+    <!-- 챕터2 진입 안내 팝업 -->
+    <div id="ch2IntroPopup" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.6);z-index:700;align-items:center;justify-content:center;">
+      <div style="background:#fdf6e3;border:3px solid #5a8c3c;border-radius:14px;padding:30px 36px;max-width:360px;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,0.5);">
+        <div style="font-size:36px;margin-bottom:12px;">🃏</div>
+        <p style="font-family:'Georgia','Batang',serif;font-size:15px;color:#1a3a1a;line-height:1.9;">같은 그림이 있는 카드를 찾아<br>뒤집어 주세요.<br>모든 카드를 뒤집으면<br>식물도감이 열립니다.</p>
+      </div>
+    </div>
+
+    <!-- 라운드 클리어 팝업 -->
+    <div id="roundClearMsg2" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.5);z-index:450;align-items:center;justify-content:center;pointer-events:none;">
+      <div style="background:linear-gradient(135deg,#f0fce8,#d4f0b8);border:3px solid #5a8c3c;border-radius:16px;padding:24px 48px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:roundPopIn 0.35s cubic-bezier(0.34,1.56,0.64,1);">
+        <div style="font-size:32px;margin-bottom:6px;">🌿</div>
+        <div id="roundClearMsgText" style="font-family:'Georgia','Batang',serif;font-size:22px;font-weight:700;color:#1a3a1a;letter-spacing:2px;">1라운드 클리어!</div>
+      </div>
+    </div>
+
+    <!-- 챕터2 완료 축하 폭죽 캔버스 -->
+    <canvas id="ch2FireworksCanvas" style="position:absolute;inset:0;z-index:490;pointer-events:none;display:none;"></canvas>
+
     <div id="ch2CompleteBanner" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.7);z-index:500;align-items:center;justify-content:center;">
       <div style="background:#fdf6e3;border:4px solid #f5c842;border-radius:20px;padding:36px 48px;text-align:center;max-width:380px;box-shadow:0 12px 48px rgba(0,0,0,0.5);">
         <div style="font-size:40px;margin-bottom:10px;">🎊</div>
@@ -1641,7 +1698,7 @@ const FISH_DATA = [
     emoji: '🐠',
     img: 'images/각시붕어.jpg',
     prob: 0.10,
-    desc: '잉어과의 물고기. 몸은 옆으로 납작하고 몸통의 높이가 높다. 몸통과 지느러미에 암청색줄무늬와 적색무늬가 있다. 암컷은 4~6월에 조개 안에 알을 낳는다.',
+    desc: '잉어과의 물고기. 몸은 옆으로 납작하고 몸통의 높이가 높다. 몸통과 지느러미에 암청색줄무늬와 적색무늬가 있다. 암컷은 4~6월에 조개안에 알을 낳는다.',
     sci: 'Rhodeus uyekii'
   }
 ];
@@ -1900,35 +1957,53 @@ function resetFishingPhase() {
 
 // Canvas line drawing
 function getRodTipPos() {
-  // SVG rodTipDot의 실제 화면 좌표 계산
   const container = document.getElementById('gameContainer');
+  const wrap = document.getElementById('fishingRodWrap');
+  if (!wrap) return { x: 120, y: 60 };
+
   const gameRect = container.getBoundingClientRect();
-  const tip = document.getElementById('rodTipDot');
-  if (!tip) return { x: 120, y: 60 };
-  const tipRect = tip.getBoundingClientRect();
+  const wrapRect = wrap.getBoundingClientRect();
+
+  // SVG viewBox 0 0 160 200, 낚싯대 끝점 cx=130, cy=8
+  // wrap의 실제 렌더 크기 대비 비율로 계산
+  const scaleX = wrapRect.width  / 160;
+  const scaleY = wrapRect.height / 200;
+
+  const tipX = 130 * scaleX;
+  const tipY = 8   * scaleY;
+
   return {
-    x: tipRect.left - gameRect.left + tipRect.width / 2,
-    y: tipRect.top  - gameRect.top  + tipRect.height / 2
+    x: (wrapRect.left - gameRect.left) + tipX,
+    y: (wrapRect.top  - gameRect.top)  + tipY
   };
 }
 
 function drawRodLine(tx, ty) {
   const canvas = document.getElementById('lineCanvas');
   const container = document.getElementById('gameContainer');
-  canvas.width = container.offsetWidth;
-  canvas.height = container.offsetHeight;
+  const W = container.offsetWidth;
+  const H = container.offsetHeight;
+  canvas.width = W;
+  canvas.height = H;
   const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, W, H);
 
   if (tx == null) return;
 
-  const tip = getRodTipPos();
+  // 낚싯대 wrap: left=4%, top=22%, width=130px, height=150px
+  // SVG 끝점: cx=130/160, cy=8/200
+  // wrap left 기준 = W * 0.04, top 기준 = H * 0.22
+  const wrapLeft = W * 0.04;
+  const wrapTop  = H * 0.22;
+  const wrapW    = 130; // CSS width
+  const wrapH    = 150; // CSS height
+  const tipX = wrapLeft + (130 / 160) * wrapW;
+  const tipY = wrapTop  + (8   / 200) * wrapH;
 
-  // 줄이 낚싯대 끝 → 포물선 → 찌
   ctx.beginPath();
-  ctx.moveTo(tip.x, tip.y);
+  ctx.moveTo(tipX, tipY);
   ctx.quadraticCurveTo(
-    (tip.x + tx) / 2, tip.y - 40,
+    (tipX + tx) / 2, tipY - 30,
     tx, ty
   );
   ctx.strokeStyle = 'rgba(210,210,210,0.85)';
@@ -2488,9 +2563,7 @@ function showFishResult(fish) {
   if (allCaught && !state.ch1Complete) {
     state.ch1Complete = true;
     saveState();
-    setTimeout(() => {
-      showFishCompletePopup1();
-    }, 3200);
+    window._pendingFishComplete = true;
   }
 }
 
@@ -2565,6 +2638,10 @@ function enterChapter2() {
   showScreen('chapter2Screen');
   updatePlantDocanCount();
   startRound(state.currentRound);
+  // 진입 안내 팝업
+  const popup = document.getElementById('ch2IntroPopup');
+  popup.style.display = 'flex';
+  popup.onclick = () => { popup.style.display = 'none'; };
 }
 
 function startRound(roundNum) {
@@ -2698,7 +2775,8 @@ function flipCard(idx, el, back, front) {
 }
 
 function roundClear() {
-  const cfg = ROUND_CONFIG[state.currentRound - 1];
+  const clearedRound = state.currentRound;
+  const cfg = ROUND_CONFIG[clearedRound - 1];
   const plant = PLANT_DATA.find(p => p.id === cfg.plant);
   const isLastRound = state.unlockedPlants.size + 1 >= PLANT_DATA.length;
 
@@ -2711,10 +2789,16 @@ function roundClear() {
   playSuccess();
   vibrate([100, 50, 200]);
 
-  // 도감 직접 표시 (source: 'roundclear' - 닫으면 다음 라운드 or 완료)
+  // 1단계: 라운드 클리어 팝업 (1.5초)
+  const msgEl = document.getElementById('roundClearMsg2');
+  document.getElementById('roundClearMsgText').textContent = `${clearedRound}라운드 클리어!`;
+  msgEl.style.display = 'flex';
+
   setTimeout(() => {
+    msgEl.style.display = 'none';
+    // 2단계: 도감 열기
     openPlantDetail(plant.id, isLastRound ? 'lastround' : 'roundclear');
-  }, 400);
+  }, 1500);
 }
 
 function nextRound() {
@@ -2781,18 +2865,97 @@ function closePlantDetail() {
   if (source === 'docan') {
     openPlantDocan();
   } else if (source === 'roundclear') {
-    // 다음 라운드 시작
     if (state.currentRound <= ROUND_CONFIG.length) {
       startRound(state.currentRound);
     } else {
-      document.getElementById('ch2CompleteBanner').style.display = 'flex';
+      showCh2Complete();
     }
   } else if (source === 'lastround') {
-    // 마지막 라운드 - 완료 배너
     state.ch2Complete = true;
     saveState();
-    document.getElementById('ch2CompleteBanner').style.display = 'flex';
+    showCh2Complete();
   }
+}
+
+function showCh2Complete() {
+  const banner = document.getElementById('ch2CompleteBanner');
+  banner.style.display = 'flex';
+  playCh2Complete();
+  startFireworks();
+  vibrate([200, 100, 200, 100, 400]);
+}
+
+function playCh2Complete() {
+  try {
+    const ctx = getAudioCtx();
+    const melody = [
+      [523,0.15],[659,0.15],[784,0.15],[1047,0.2],
+      [784,0.1],[1047,0.1],[1319,0.25],
+      [1047,0.1],[1319,0.1],[1568,0.3],
+      [1319,0.15],[1047,0.15],[784,0.15],[1047,0.4]
+    ];
+    let t = ctx.currentTime + 0.05;
+    melody.forEach(([freq, dur]) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.3, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.9);
+      osc.start(t); osc.stop(t + dur);
+      t += dur;
+    });
+  } catch(e) {}
+}
+
+function startFireworks() {
+  const canvas = document.getElementById('ch2FireworksCanvas');
+  const container = document.getElementById('gameContainer');
+  canvas.width = container.offsetWidth;
+  canvas.height = container.offsetHeight;
+  canvas.style.display = 'block';
+  const ctx = canvas.getContext('2d');
+  const particles = [];
+  const colors = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff922b','#cc5de8','#f06595'];
+
+  for (let b = 0; b < 6; b++) {
+    setTimeout(() => {
+      const bx = 80 + Math.random() * (canvas.width - 160);
+      const by = 80 + Math.random() * (canvas.height * 0.5);
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      for (let i = 0; i < 40; i++) {
+        const angle = (Math.PI * 2 / 40) * i;
+        const speed = 2 + Math.random() * 4;
+        particles.push({
+          x: bx, y: by,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          alpha: 1, color, size: 3 + Math.random() * 3
+        });
+      }
+    }, b * 400);
+  }
+
+  let frame = 0;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      p.vy += 0.08; // 중력
+      p.alpha -= 0.012;
+      ctx.globalAlpha = Math.max(0, p.alpha);
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    frame++;
+    if (frame < 180) requestAnimationFrame(animate);
+    else canvas.style.display = 'none';
+  }
+  animate();
 }
 
 function renderPlantDetail(idx) {
@@ -2928,6 +3091,11 @@ function closeDetail() {
     openDocan();
   }
   setStatus('다시 캐스팅하세요!');
+  // 챕터1 마지막 물고기 도감 닫은 후 축하팝업
+  if (window._pendingFishComplete) {
+    window._pendingFishComplete = false;
+    setTimeout(() => showFishCompletePopup1(), 300);
+  }
 }
 
 function renderDetail(idx) {
