@@ -549,6 +549,19 @@
     margin-top: 1px;
   }
 
+  @keyframes hitFloat {
+    0%   { transform: translateX(-50%) translateY(0); opacity: 1; }
+    100% { transform: translateX(-50%) translateY(-40px); opacity: 0; }
+  }
+
+  @keyframes scoreShake {
+    0%, 100% { transform: translateX(0); }
+    20%       { transform: translateX(-6px); }
+    40%       { transform: translateX(6px); }
+    60%       { transform: translateX(-4px); }
+    80%       { transform: translateX(4px); }
+  }
+
   @keyframes roundPopIn {
     0% { transform: scale(0.5); opacity: 0; }
     100% { transform: scale(1); opacity: 1; }
@@ -1251,6 +1264,11 @@
         <span>챕터 2 — 식물 도감</span>
         <span id="ch2CompleteTag" class="ch-complete" style="display:none">완료</span>
       </button>
+      <button class="chapterBtn" id="ch3Btn" onclick="enterChapter3()" style="display:none">
+        <span class="ch-icon">🦎</span>
+        <span>챕터 3 — 동물 도감</span>
+        <span id="ch3CompleteTag" class="ch-complete" style="display:none">완료</span>
+      </button>
     </div>
 
     <!-- 데이터 초기화 버튼 -->
@@ -1583,11 +1601,19 @@
     <canvas id="ch2FireworksCanvas" style="position:absolute;inset:0;z-index:490;pointer-events:none;display:none;"></canvas>
 
     <div id="ch2CompleteBanner" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.7);z-index:500;align-items:center;justify-content:center;">
-      <div style="background:#fdf6e3;border:4px solid #f5c842;border-radius:20px;padding:36px 48px;text-align:center;max-width:380px;box-shadow:0 12px 48px rgba(0,0,0,0.5);">
+      <div style="background:#fdf6e3;border:4px solid #f5c842;border-radius:20px;padding:36px 48px;text-align:center;max-width:380px;box-shadow:0 12px 48px rgba(0,0,0,0.5);position:relative;">
         <div style="font-size:40px;margin-bottom:10px;">🎊</div>
         <h2 style="font-family:'Gaegu',sans-serif;font-size:24px;color:#1a3a1a;margin-bottom:10px;">챕터 2 완료!</h2>
         <p style="font-family:'Gaegu', sans-serif;font-size:14px;color:#3a3a1a;line-height:1.8;margin-bottom:20px;">논산천의 식물 도감을<br>모두 채웠어요!</p>
-        <button onclick="goHome()" style="background:#8b6340;border:none;color:white;font-family:'Gaegu',sans-serif;font-size:15px;padding:10px 28px;border-radius:8px;cursor:pointer;">처음 화면으로</button>
+        <button onclick="showCh2Next()" style="position:absolute;bottom:14px;right:16px;background:#8b6340;border:none;color:white;border-radius:6px;padding:6px 12px;font-size:18px;cursor:pointer;line-height:1;">→</button>
+      </div>
+    </div>
+
+    <!-- 챕터2 완료 후 챕터3 안내 팝업 -->
+    <div id="ch2ToC3Popup" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.65);z-index:500;align-items:center;justify-content:center;">
+      <div style="background:#fdf6e3;border:3px solid #8b6340;border-radius:16px;padding:32px 40px;max-width:380px;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,0.5);">
+        <div style="font-size:36px;margin-bottom:12px;">🦎</div>
+        <p style="font-family:'Gaegu',sans-serif;font-size:15px;color:#1a3a1a;line-height:1.9;">이제 논산천에서 만날 수 있는<br>동물들을 알아볼까요?<br>처음으로 돌아가서<br>챕터 3을 눌러주세요.</p>
       </div>
     </div>
   </div>
@@ -1629,6 +1655,143 @@
         <button onclick="navigatePlantCard(-1)" id="prevPlantBtn" style="background:#8b6340;border:none;color:#fdf6e3;font-family:'Gaegu',sans-serif;font-size:14px;padding:6px 18px;border-radius:6px;cursor:pointer;">◀ 이전</button>
         <span id="plantCardPageInfo" style="font-size:13px;color:#888;align-self:center;">1 / 6</span>
         <button onclick="navigatePlantCard(1)" id="nextPlantBtn" style="background:#8b6340;border:none;color:#fdf6e3;font-family:'Gaegu',sans-serif;font-size:14px;padding:6px 18px;border-radius:6px;cursor:pointer;">다음 ▶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       CHAPTER 3 - 두더지잡기
+  ============================= -->
+  <div id="chapter3Screen" class="screen">
+    <!-- 배경 -->
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg,#87ceeb 0%,#a8d8f0 30%,#6aaa40 55%,#4a8a28 65%,#8b6340 75%,#7a5530 100%);overflow:hidden;">
+      <div style="position:absolute;top:5%;left:10%;width:80px;height:20px;background:rgba(255,255,255,0.85);border-radius:50px;"><span style="position:absolute;width:40px;height:32px;background:rgba(255,255,255,0.85);border-radius:50%;top:-14px;left:10px;display:block"></span></div>
+      <div style="position:absolute;top:8%;right:15%;width:60px;height:16px;background:rgba(255,255,255,0.8);border-radius:50px;"><span style="position:absolute;width:30px;height:24px;background:rgba(255,255,255,0.8);border-radius:50%;top:-10px;left:8px;display:block"></span></div>
+    </div>
+
+    <!-- 첫 진입 안내 팝업 -->
+    <div id="ch3IntroPopup" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.6);z-index:800;align-items:center;justify-content:center;">
+      <div style="background:#fdf6e3;border:3px solid #8b6340;border-radius:14px;padding:30px 36px;max-width:360px;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,0.5);">
+        <div style="font-size:36px;margin-bottom:12px;">🦎</div>
+        <p style="font-family:'Gaegu',sans-serif;font-size:15px;color:#1a3a1a;line-height:1.9;">두더지 잡기를 통해<br>동물도감을 열어주세요.<br>각 라운드에 알맞은 동물을 누르면<br>점수가 올라가요!</p>
+        <button onclick="closeCh3Intro()" style="margin-top:14px;background:#8b6340;border:none;color:white;font-family:'Gaegu',sans-serif;font-size:15px;padding:10px 28px;border-radius:8px;cursor:pointer;">확인!</button>
+      </div>
+    </div>
+
+    <button class="backBtn" onclick="goHome()">← 처음으로</button>
+
+    <button id="animalDocanBtn" onclick="openAnimalDocan()" style="position:absolute;top:12px;right:12px;background:rgba(255,251,225,0.92);border:2px solid #8b6340;border-radius:10px;padding:8px 14px;font-family:'Gaegu',sans-serif;font-size:13px;color:#1a3a1a;cursor:pointer;z-index:100;display:flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,0.25);">
+      🦎 도감 <span id="animalDocanCount">0/5</span>
+    </button>
+
+    <!-- 점수 & 라운드 -->
+    <div style="position:absolute;top:55px;left:50%;transform:translateX(-50%);display:flex;gap:16px;z-index:30;">
+      <div style="background:rgba(255,251,225,0.92);border:2px solid #8b6340;border-radius:20px;padding:5px 18px;font-family:'Gaegu',sans-serif;font-size:13px;font-weight:700;color:#1a3a1a;box-shadow:0 2px 8px rgba(0,0,0,0.2);">
+        🎯 라운드 <span id="ch3RoundLabel">1</span>
+      </div>
+      <div style="background:rgba(255,251,225,0.92);border:2px solid #8b6340;border-radius:20px;padding:5px 18px;font-family:'Gaegu',sans-serif;font-size:13px;font-weight:700;color:#1a3a1a;box-shadow:0 2px 8px rgba(0,0,0,0.2);">
+        ⭐ <span id="ch3ScoreLabel" style="transition:color 0.3s;">0</span>점
+      </div>
+    </div>
+
+    <!-- 타이머바 -->
+    <div style="position:absolute;top:100px;left:10%;right:10%;height:8px;background:rgba(0,0,0,0.15);border-radius:4px;z-index:30;">
+      <div id="ch3TimerBar" style="height:100%;background:linear-gradient(90deg,#4caf50,#8bc34a);border-radius:4px;width:100%;transition:width 0.1s linear;"></div>
+    </div>
+
+    <!-- 구멍 그리드 -->
+    <div id="ch3Grid" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;display:grid;gap:12px;"></div>
+
+    <!-- 목표 동물 안내 -->
+    <div id="ch3TargetHint" style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(255,251,225,0.95);border:2px solid #8b6340;border-radius:20px;padding:6px 20px;font-family:'Gaegu',sans-serif;font-size:13px;color:#1a3a1a;z-index:30;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.2);"></div>
+
+    <!-- 라운드 시작 팝업 -->
+    <div id="ch3RoundStartPopup" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.55);z-index:600;align-items:center;justify-content:center;">
+      <div style="background:#fdf6e3;border:3px solid #5a8c3c;border-radius:16px;padding:28px 40px;max-width:360px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+        <div style="font-size:32px;margin-bottom:8px;" id="ch3RoundStartIcon">🐢</div>
+        <div style="font-family:'Gaegu',sans-serif;font-size:20px;font-weight:700;color:#1a3a1a;margin-bottom:6px;" id="ch3RoundStartTitle">1라운드</div>
+        <p style="font-family:'Gaegu',sans-serif;font-size:14px;color:#3a3a1a;line-height:1.8;" id="ch3RoundStartMsg">이번 라운드 목표:<br><b id="ch3TargetName">남생이</b>를 잡으세요!</p>
+        <button onclick="startCh3Round()" style="margin-top:14px;background:#5a8c3c;border:none;color:white;font-family:'Gaegu',sans-serif;font-size:15px;padding:10px 28px;border-radius:8px;cursor:pointer;">시작!</button>
+      </div>
+    </div>
+
+    <!-- 라운드 성공 팝업 -->
+    <div id="ch3RoundClearPopup" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.55);z-index:600;align-items:center;justify-content:center;pointer-events:none;">
+      <div style="background:linear-gradient(135deg,#f0fce8,#d4f0b8);border:3px solid #5a8c3c;border-radius:16px;padding:24px 48px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:roundPopIn 0.35s cubic-bezier(0.34,1.56,0.64,1);">
+        <div style="font-size:32px;margin-bottom:6px;">🎉</div>
+        <div id="ch3RoundClearText" style="font-family:'Gaegu',sans-serif;font-size:22px;font-weight:700;color:#1a3a1a;">1라운드 클리어!</div>
+      </div>
+    </div>
+
+    <!-- 챕터3 완료 축하 캔버스 -->
+    <canvas id="ch3FireworksCanvas" style="position:absolute;inset:0;z-index:490;pointer-events:none;display:none;"></canvas>
+
+    <!-- 챕터3 완료 배너 -->
+    <div id="ch3CompleteBanner" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.7);z-index:700;align-items:center;justify-content:center;">
+      <div style="background:linear-gradient(135deg,#fffbe6,#fff3cd);border:4px solid #f5c842;border-radius:20px;padding:32px 40px;max-width:380px;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,0.5);position:relative;">
+        <div style="font-size:40px;margin-bottom:10px;">🎉</div>
+        <h2 style="font-family:'Gaegu',sans-serif;font-size:22px;color:#1a3a1a;margin-bottom:10px;">축하합니다!</h2>
+        <p style="font-family:'Gaegu',sans-serif;font-size:14px;color:#3a3a1a;line-height:1.8;">논산천 동물도감을<br>모두 채웠어요!</p>
+        <button onclick="showCh3Ending1()" style="position:absolute;bottom:14px;right:16px;background:#8b6340;border:none;color:white;border-radius:6px;padding:6px 12px;font-size:18px;cursor:pointer;line-height:1;">→</button>
+      </div>
+    </div>
+
+    <!-- 엔딩 팝업 1 -->
+    <div id="ch3Ending1" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.65);z-index:710;align-items:center;justify-content:center;">
+      <div style="background:#fdf6e3;border:3px solid #8b6340;border-radius:16px;padding:32px 40px;max-width:380px;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,0.5);position:relative;">
+        <div style="font-size:36px;margin-bottom:12px;">🌿</div>
+        <p style="font-family:'Gaegu',sans-serif;font-size:15px;color:#1a3a1a;line-height:1.9;">지금까지 논산천에 사는<br>다양한 생물에 대해 알아봤어요.<br>당신은 이제<br>논산천 생태박사입니다!</p>
+        <button onclick="showCh3Ending2()" style="position:absolute;bottom:14px;right:16px;background:#8b6340;border:none;color:white;border-radius:6px;padding:6px 12px;font-size:18px;cursor:pointer;line-height:1;">→</button>
+      </div>
+    </div>
+
+    <!-- 엔딩 팝업 2 -->
+    <div id="ch3Ending2" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.65);z-index:710;align-items:center;justify-content:center;">
+      <div style="background:#fdf6e3;border:3px solid #8b6340;border-radius:16px;padding:32px 40px;max-width:380px;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,0.5);">
+        <div style="font-size:36px;margin-bottom:12px;">💚</div>
+        <p style="font-family:'Gaegu',sans-serif;font-size:15px;color:#1a3a1a;line-height:1.9;">논산천은 많은 생물이<br>어울려 살아가는 소중한 집이에요.<br>우리의 작은 관심과 노력이<br>큰 도움이 된답니다.</p>
+        <button onclick="endingFinish()" style="margin-top:16px;background:#5a8c3c;border:none;color:white;font-family:'Gaegu',sans-serif;font-size:14px;padding:10px 24px;border-radius:8px;cursor:pointer;">처음으로 돌아가기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 동물 도감 오버레이 -->
+  <div id="animalDocanOverlay" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.65);z-index:200;align-items:center;justify-content:center;">
+    <div style="background:#fdf6e3;border:3px solid #8b6340;border-radius:14px;width:90%;max-width:680px;max-height:85vh;box-shadow:0 12px 48px rgba(0,0,0,0.5);display:flex;flex-direction:column;overflow:hidden;">
+      <div style="background:#8b6340;color:#fdf6e3;font-family:'Gaegu',sans-serif;font-size:18px;font-weight:700;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;letter-spacing:2px;">
+        <span>🦎 동물 도감</span>
+        <span id="animalDocanHeaderCount" style="font-size:14px;">0 / 5</span>
+        <button onclick="closeAnimalDocan()" style="background:none;border:none;color:#fdf6e3;font-size:24px;cursor:pointer;">✕</button>
+      </div>
+      <div id="animalDocanPages" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px;overflow-y:auto;flex:1;"></div>
+    </div>
+  </div>
+
+  <!-- 동물 상세 팝업 -->
+  <div id="animalDetailOverlay" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.65);z-index:300;align-items:center;justify-content:center;">
+    <div style="background:#fdf6e3;border:3px solid #8b6340;border-radius:14px;width:90%;max-width:640px;max-height:80vh;box-shadow:0 12px 48px rgba(0,0,0,0.5);overflow:hidden;display:flex;flex-direction:column;">
+      <div style="background:#8b6340;color:#fdf6e3;font-family:'Gaegu',sans-serif;font-size:16px;font-weight:700;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;letter-spacing:2px;">
+        <span id="animalDetailTitle">동물 정보</span>
+        <button onclick="closeAnimalDetail()" style="background:none;border:none;color:#fdf6e3;font-size:22px;cursor:pointer;">✕</button>
+      </div>
+      <div style="display:flex;flex:1;overflow:hidden;">
+        <div style="flex:1;padding:20px;display:flex;flex-direction:column;align-items:center;border-right:2px dashed #c8985a;gap:12px;">
+          <div style="width:140px;height:110px;border-radius:10px;border:2px solid #c8985a;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#f5f0e8;">
+            <img id="animalDetailImg" src="" style="width:100%;height:100%;object-fit:contain;display:none;background:#f5f0e8;">
+            <span id="animalDetailEmoji" style="font-size:56px;">🦎</span>
+          </div>
+          <div id="animalDetailName" style="font-family:'Gaegu',sans-serif;font-size:20px;font-weight:700;color:#1a3a1a;text-align:center;"></div>
+          <div id="animalDetailSci" style="font-size:11px;color:#888;font-style:italic;text-align:center;"></div>
+        </div>
+        <div style="flex:1;padding:20px 24px;overflow-y:auto;">
+          <div style="font-family:'Gaegu',sans-serif;font-size:14px;font-weight:700;color:#5a3010;margin-bottom:8px;">📋 생태 정보</div>
+          <div id="animalDetailDesc" style="font-family:'Nanum Myeongjo',serif;font-size:14px;color:#2a3a2a;line-height:1.9;word-break:keep-all;"></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:12px;padding:10px;border-top:1px solid #c8985a;background:#fdf6e3;">
+        <button onclick="navigateAnimalCard(-1)" id="prevAnimalBtn" style="background:#8b6340;border:none;color:#fdf6e3;font-family:'Gaegu',sans-serif;font-size:14px;padding:6px 18px;border-radius:6px;cursor:pointer;">◀ 이전</button>
+        <span id="animalCardPageInfo" style="font-size:13px;color:#888;align-self:center;">1 / 5</span>
+        <button onclick="navigateAnimalCard(1)" id="nextAnimalBtn" style="background:#8b6340;border:none;color:#fdf6e3;font-family:'Gaegu',sans-serif;font-size:14px;padding:6px 18px;border-radius:6px;cursor:pointer;">다음 ▶</button>
       </div>
     </div>
   </div>
@@ -1847,6 +2010,12 @@ function showScreen(id) {
 function goHome() {
   clearAllTimers();
   stopFeverBgm();
+  // 챕터3 타이머 정리
+  if (ch3State) {
+    clearInterval(ch3State.timerId);
+    clearInterval(ch3State.timerBarId);
+    ch3State.running = false;
+  }
   resetFishingPhase();
   updateStartScreen();
   showScreen('startScreen');
@@ -1888,11 +2057,17 @@ function updateStartScreen() {
   saveState();
   const tag = document.getElementById('ch1CompleteTag');
   if (tag) tag.style.display = allCaught ? 'inline-block' : 'none';
-  // 챕터2 버튼 표시
   const ch2Btn = document.getElementById('ch2Btn');
   if (ch2Btn) ch2Btn.style.display = allCaught ? 'flex' : 'none';
   const ch2Tag = document.getElementById('ch2CompleteTag');
   if (ch2Tag) ch2Tag.style.display = state.ch2Complete ? 'inline-block' : 'none';
+  // 챕터3 버튼
+  const ch3Btn = document.getElementById('ch3Btn');
+  if (ch3Btn) ch3Btn.style.display = state.ch2Complete ? 'flex' : 'none';
+  const ch3Tag = document.getElementById('ch3CompleteTag');
+  if (ch3Tag) ch3Tag.style.display = ch3State.ch3Complete ? 'inline-block' : 'none';
+  // 엔딩 열람 후 시작화면 배경음악
+  if (localStorage.getItem('endingUnlocked') === 'true') startEndingBgm();
 }
 
 // =============================
@@ -2686,16 +2861,34 @@ function buildCardGame(cfg) {
 
   currentCardGame.cards = deck;
 
-  // 그리드 열 수 결정
-  const cols = cfg.cards <= 6 ? 3 : cfg.cards <= 8 ? 4 : cfg.cards <= 12 ? 4 : 4;
-  area.style.maxWidth = (cols * 90 + (cols - 1) * 10 + 20) + 'px';
+  // 라운드별 열 수: 1라운드=3열, 2라운드=4열, 3라운드=3열, 4~6라운드=4열
+  const cols = cfg.cards <= 6 ? 3 : cfg.cards === 8 ? 4 : cfg.cards === 12 ? 3 : 4;
+
+  // 카드 크기: 화면 너비 기준으로 동적 계산
+  const container = document.getElementById('gameContainer');
+  const availW = Math.min(container.offsetWidth, container.offsetHeight) * 0.95;
+  const gap = 8;
+  const cardSize = Math.floor((availW - gap * (cols + 1)) / cols);
+  const cardW = Math.min(cardSize, 90);
+  const cardH = Math.round(cardW * 1.2);
+  const fontSize = Math.round(cardW * 0.55);
+
+  area.style.cssText = `
+    position:absolute;top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    z-index:20;
+    display:grid;
+    grid-template-columns:repeat(${cols}, ${cardW}px);
+    gap:${gap}px;
+    padding:10px;
+  `;
 
   deck.forEach((card, idx) => {
     const el = document.createElement('div');
     el.style.cssText = `
-      width:80px;height:100px;border-radius:10px;border:2px solid #8b6340;
+      width:${cardW}px;height:${cardH}px;border-radius:10px;border:2px solid #8b6340;
       background:#fff8e8;cursor:pointer;display:flex;align-items:center;
-      justify-content:center;font-size:44px;position:relative;
+      justify-content:center;font-size:${fontSize}px;position:relative;
       box-shadow:0 3px 10px rgba(0,0,0,0.2);transition:transform 0.15s;
       user-select:none;
     `;
@@ -2703,7 +2896,7 @@ function buildCardGame(cfg) {
 
     // 뒷면
     const back = document.createElement('div');
-    back.style.cssText = 'position:absolute;inset:0;border-radius:8px;background:linear-gradient(135deg,#5a8c3c,#7ab648);display:flex;align-items:center;justify-content:center;font-size:30px;';
+    back.style.cssText = `position:absolute;inset:0;border-radius:8px;background:linear-gradient(135deg,#5a8c3c,#7ab648);display:flex;align-items:center;justify-content:center;font-size:${Math.round(cardW*0.4)}px;`;
     back.textContent = '🌿';
     el.appendChild(back);
 
@@ -2876,6 +3069,287 @@ function closePlantDetail() {
     showCh2Complete();
   }
 }
+
+function showCh2Next() {
+  document.getElementById('ch2CompleteBanner').style.display = 'none';
+  const p = document.getElementById('ch2ToC3Popup');
+  p.style.display = 'flex';
+  p.onclick = () => { p.style.display = 'none'; updateStartScreen(); goHome(); };
+}
+
+// =============================
+// 챕터3 - 동물 데이터
+// =============================
+const ANIMAL_DATA = [
+  { id:'namsaengyi', name:'남생이',    img:'images/남생이.png',    emoji:'🐢', sci:'Mauremys reevesii',     desc:'...' },
+  { id:'waegari',    name:'왜가리',    img:'images/왜가리.png',    emoji:'🦢', sci:'Ardea cinerea',         desc:'...' },
+  { id:'mudang',     name:'무당개구리',img:'images/무당개구리.png',emoji:'🐸', sci:'Bombina orientalis',    desc:'...' },
+  { id:'cheongdung', name:'청둥오리',  img:'images/청둥오리.png',  emoji:'🦆', sci:'Anas platyrhynchos',    desc:'...' },
+  { id:'maengkkongi',name:'맹꽁이',    img:'images/맹꽁이.png',    emoji:'🐸', sci:'Kaloula borealis',      desc:'...' }
+];
+const CH3_ROUNDS = [
+  { round:1, target:'namsaengyi', cols:3, rows:3, interval:1800 },
+  { round:2, target:'waegari',    cols:3, rows:3, interval:1500 },
+  { round:3, target:'mudang',     cols:4, rows:3, interval:1300 },
+  { round:4, target:'cheongdung', cols:4, rows:3, interval:1100 },
+  { round:5, target:'maengkkongi',cols:4, rows:4, interval:900  }
+];
+let ch3State = {
+  round:1, score:0, running:false, timerId:null, timerBarId:null, timeLeft:30,
+  unlockedAnimals: new Set(JSON.parse(localStorage.getItem('unlockedAnimals')||'[]')),
+  ch3Complete: localStorage.getItem('ch3Complete')==='true'
+};
+let endingBgmInterval = null;
+
+function enterChapter3() {
+  showScreen('chapter3Screen');
+  updateAnimalDocanCount();
+  ch3State.round = parseInt(localStorage.getItem('ch3Round')||'1');
+  // 첫 진입 시 안내 팝업
+  const introShown = localStorage.getItem('ch3IntroShown');
+  if (!introShown) {
+    const popup = document.getElementById('ch3IntroPopup');
+    popup.style.display = 'flex';
+  } else {
+    showCh3RoundStartPopup(ch3State.round);
+  }
+}
+
+function closeCh3Intro() {
+  localStorage.setItem('ch3IntroShown','true');
+  document.getElementById('ch3IntroPopup').style.display = 'none';
+  showCh3RoundStartPopup(ch3State.round);
+}
+
+function showCh3RoundStartPopup(roundNum) {
+  const cfg = CH3_ROUNDS[roundNum-1]; if (!cfg) return;
+  const animal = ANIMAL_DATA.find(a=>a.id===cfg.target);
+  document.getElementById('ch3RoundLabel').textContent = roundNum;
+  document.getElementById('ch3RoundStartTitle').textContent = roundNum+'라운드';
+  document.getElementById('ch3RoundStartIcon').textContent = animal.emoji;
+  document.getElementById('ch3TargetName').textContent = animal.name;
+  document.getElementById('ch3RoundStartPopup').style.display = 'flex';
+  document.getElementById('ch3TargetHint').textContent = '👆 '+animal.name+'을(를) 잡으세요! 두더지는 피하세요!';
+  ch3State.score = 0;
+  document.getElementById('ch3ScoreLabel').textContent = '0';
+  document.getElementById('ch3ScoreLabel').style.color = '';
+  document.getElementById('ch3TimerBar').style.width = '100%';
+}
+
+function startCh3Round() {
+  document.getElementById('ch3RoundStartPopup').style.display = 'none';
+  const cfg = CH3_ROUNDS[ch3State.round-1];
+  buildCh3Grid(cfg);
+  ch3State.running = true; ch3State.timeLeft = 30;
+  ch3State.timerBarId = setInterval(() => {
+    ch3State.timeLeft -= 0.1;
+    updateCh3TimerBar();
+    if (ch3State.timeLeft <= 0) {
+      clearInterval(ch3State.timerBarId); clearInterval(ch3State.timerId);
+      ch3State.running = false;
+      setTimeout(() => checkCh3RoundResult(), 300);
+    }
+  }, 100);
+  ch3State.timerId = setInterval(() => spawnAnimal(cfg), cfg.interval);
+}
+
+function updateCh3TimerBar() {
+  const pct = Math.max(0, ch3State.timeLeft/30*100);
+  const bar = document.getElementById('ch3TimerBar');
+  bar.style.width = pct+'%';
+  bar.style.background = pct>40?'linear-gradient(90deg,#4caf50,#8bc34a)':pct>20?'linear-gradient(90deg,#ff9800,#ffc107)':'linear-gradient(90deg,#f44336,#ff5722)';
+}
+
+function buildCh3Grid(cfg) {
+  const grid = document.getElementById('ch3Grid'); grid.innerHTML='';
+  const cont = document.getElementById('gameContainer');
+  const availW = cont.offsetWidth*0.88; const availH = cont.offsetHeight*0.55;
+  const cellW = Math.floor(Math.min(availW/cfg.cols, availH/cfg.rows, 110));
+  grid.style.gridTemplateColumns = `repeat(${cfg.cols},${cellW}px)`;
+  grid.style.gap = '10px';
+  const total = cfg.cols*cfg.rows;
+  for (let i=0;i<total;i++) {
+    const hole = document.createElement('div');
+    hole.style.cssText = `width:${cellW}px;height:${cellW}px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#6b4c2a,#3a2010);box-shadow:inset 0 4px 12px rgba(0,0,0,0.6);position:relative;overflow:hidden;cursor:pointer;`;
+    hole.dataset.idx = i;
+    hole.innerHTML = `<div class="ch3Creature" data-type="" style="position:absolute;bottom:-110%;left:0;right:0;height:88%;display:flex;align-items:flex-end;justify-content:center;transition:bottom 0.15s ease-out;"></div>`;
+    hole.addEventListener('click', onHoleClick);
+    hole.addEventListener('touchstart', onHoleClick, {passive:true});
+    grid.appendChild(hole);
+  }
+}
+
+function spawnAnimal(cfg) {
+  if (!ch3State.running) return;
+  const holes = document.getElementById('ch3Grid').querySelectorAll('[data-idx]');
+  const avail = [...holes].filter(h=>{const c=h.querySelector('.ch3Creature');return c&&(c.style.bottom==='-110%'||c.style.bottom==='');});
+  if (!avail.length) return;
+  const hole = avail[Math.floor(Math.random()*avail.length)];
+  const creature = hole.querySelector('.ch3Creature');
+  const isMole = Math.random()<0.45;
+  const animal = ANIMAL_DATA.find(a=>a.id===cfg.target);
+  if (isMole) {
+    creature.innerHTML = `<img src="images/두더지.png" style="width:82%;object-fit:contain;pointer-events:none;">`;
+    creature.dataset.type = 'mole';
+  } else {
+    creature.innerHTML = `<img src="${animal.img}" style="width:82%;object-fit:contain;pointer-events:none;">`;
+    creature.dataset.type = 'target';
+  }
+  creature.style.bottom = '0%';
+  setTimeout(()=>{ if(creature.style.bottom==='0%') creature.style.bottom='-110%'; }, cfg.interval*0.82);
+}
+
+function onHoleClick(e) {
+  if (!ch3State.running) return;
+  const hole = e.currentTarget;
+  const creature = hole.querySelector('.ch3Creature');
+  if (!creature||creature.style.bottom!=='0%') return;
+  const type = creature.dataset.type;
+  creature.style.bottom = '-110%';
+  if (type==='target') {
+    ch3State.score+=10; playBeep(784,0.1,'sine',0.3); vibrate(40);
+    showHitEffect(hole,'+10','#4caf50');
+  } else {
+    if (ch3State.score>0) { ch3State.score-=10; }
+    else {
+      const sl = document.getElementById('ch3ScoreLabel');
+      sl.style.color='#e53935'; sl.style.animation='scoreShake 0.4s';
+      playBeep(200,0.12,'sawtooth',0.4); vibrate(80);
+      setTimeout(()=>{sl.style.color='';sl.style.animation='';},500);
+    }
+    showHitEffect(hole,'-10','#e53935'); playBeep(300,0.08,'sawtooth',0.25);
+  }
+  document.getElementById('ch3ScoreLabel').textContent = ch3State.score;
+  if (ch3State.score>=100) {
+    clearInterval(ch3State.timerId); clearInterval(ch3State.timerBarId);
+    ch3State.running=false;
+    setTimeout(()=>ch3RoundSuccess(),300);
+  }
+}
+
+function showHitEffect(hole, text, color) {
+  const ef=document.createElement('div');
+  ef.textContent=text;
+  ef.style.cssText=`position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-family:'Gaegu',sans-serif;font-size:18px;font-weight:700;color:${color};pointer-events:none;animation:hitFloat 0.8s ease-out forwards;z-index:99;`;
+  hole.appendChild(ef); setTimeout(()=>ef.remove(),800);
+}
+
+function checkCh3RoundResult() {
+  document.getElementById('ch3Grid').innerHTML='';
+  showCh3RoundStartPopup(ch3State.round);
+}
+
+function ch3RoundSuccess() {
+  const roundNum=ch3State.round;
+  const cfg=CH3_ROUNDS[roundNum-1];
+  const animal=ANIMAL_DATA.find(a=>a.id===cfg.target);
+  const isLast=roundNum>=CH3_ROUNDS.length;
+  ch3State.unlockedAnimals.add(animal.id);
+  if (!isLast) ch3State.round++;
+  localStorage.setItem('ch3Round',ch3State.round);
+  localStorage.setItem('unlockedAnimals',JSON.stringify([...ch3State.unlockedAnimals]));
+  updateAnimalDocanCount(); playSuccess(); vibrate([100,50,200]);
+  const popup=document.getElementById('ch3RoundClearPopup');
+  document.getElementById('ch3RoundClearText').textContent=roundNum+'라운드 클리어!';
+  popup.style.display='flex';
+  setTimeout(()=>{popup.style.display='none';document.getElementById('ch3Grid').innerHTML='';openAnimalDetail(animal.id,isLast?'ch3last':'ch3round');},1500);
+}
+
+// 동물 도감
+function updateAnimalDocanCount() {
+  const count=ch3State.unlockedAnimals.size;
+  const el=document.getElementById('animalDocanCount'); if(el)el.textContent=count+'/5';
+  const hel=document.getElementById('animalDocanHeaderCount'); if(hel)hel.textContent=count+' / 5';
+}
+function openAnimalDocan() { buildAnimalDocanPages(); document.getElementById('animalDocanOverlay').style.display='flex'; }
+function closeAnimalDocan() { document.getElementById('animalDocanOverlay').style.display='none'; }
+function buildAnimalDocanPages() {
+  const c=document.getElementById('animalDocanPages'); c.innerHTML='';
+  ANIMAL_DATA.forEach(a=>{
+    const unlocked=ch3State.unlockedAnimals.has(a.id);
+    const tile=document.createElement('div');
+    tile.style.cssText=`background:white;border:2px solid #c8985a;border-radius:10px;padding:10px;text-align:center;cursor:${unlocked?'pointer':'default'};min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;opacity:${unlocked?1:0.55};`;
+    tile.innerHTML=`<div style="font-size:28px;">${unlocked?a.emoji:'🦎'}</div><div style="font-family:'Gaegu',sans-serif;font-size:13px;color:${unlocked?'#1a3a1a':'#aaa'};">${unlocked?a.name:'???'}</div>`;
+    if(unlocked) tile.onclick=()=>{closeAnimalDocan();openAnimalDetail(a.id,'docan');};
+    c.appendChild(tile);
+  });
+}
+let currentAnimalDetailIdx=0;
+function openAnimalDetail(animalId, source) {
+  currentAnimalDetailIdx=ANIMAL_DATA.findIndex(a=>a.id===animalId);
+  renderAnimalDetail(currentAnimalDetailIdx);
+  const ov=document.getElementById('animalDetailOverlay');
+  ov.dataset.source=source||'game'; ov.style.display='flex';
+}
+function closeAnimalDetail() {
+  const ov=document.getElementById('animalDetailOverlay');
+  const source=ov.dataset.source; ov.style.display='none';
+  if(source==='docan') openAnimalDocan();
+  else if(source==='ch3round') showCh3RoundStartPopup(ch3State.round);
+  else if(source==='ch3last') { ch3State.ch3Complete=true; localStorage.setItem('ch3Complete','true'); updateStartScreen(); showCh3Complete(); }
+}
+function renderAnimalDetail(idx) {
+  const a=ANIMAL_DATA[idx]; const unlocked=ch3State.unlockedAnimals.has(a.id);
+  document.getElementById('animalDetailTitle').textContent=unlocked?a.name+' 정보':'???';
+  document.getElementById('animalDetailName').textContent=unlocked?a.name:'???';
+  document.getElementById('animalDetailSci').textContent=unlocked?a.sci:'';
+  document.getElementById('animalDetailDesc').textContent=unlocked?a.desc:'';
+  document.getElementById('animalCardPageInfo').textContent=(idx+1)+' / '+ANIMAL_DATA.length;
+  const imgEl=document.getElementById('animalDetailImg'); const emojiEl=document.getElementById('animalDetailEmoji');
+  if(unlocked&&a.img){imgEl.src=a.img;imgEl.style.display='block';emojiEl.style.display='none';}
+  else{imgEl.src='';imgEl.style.display='none';emojiEl.style.display='block';emojiEl.textContent=unlocked?a.emoji:'🦎';}
+  document.getElementById('prevAnimalBtn').disabled=(idx===0);
+  document.getElementById('nextAnimalBtn').disabled=(idx===ANIMAL_DATA.length-1);
+}
+function navigateAnimalCard(dir) {
+  const newIdx=currentAnimalDetailIdx+dir;
+  if(newIdx<0||newIdx>=ANIMAL_DATA.length) return;
+  currentAnimalDetailIdx=newIdx; renderAnimalDetail(newIdx);
+}
+function showCh3Complete() {
+  playCh2Complete(); startCh3Fireworks(); vibrate([200,100,200,100,400]);
+  document.getElementById('ch3CompleteBanner').style.display='flex';
+}
+function startCh3Fireworks() {
+  const canvas=document.getElementById('ch3FireworksCanvas');
+  const cont=document.getElementById('gameContainer');
+  canvas.width=cont.offsetWidth; canvas.height=cont.offsetHeight;
+  canvas.style.display='block';
+  const ctx=canvas.getContext('2d'); const particles=[];
+  const colors=['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff922b','#cc5de8'];
+  for(let b=0;b<8;b++) setTimeout(()=>{
+    const bx=60+Math.random()*(canvas.width-120); const by=60+Math.random()*(canvas.height*0.5);
+    const color=colors[Math.floor(Math.random()*colors.length)];
+    for(let i=0;i<45;i++){const angle=(Math.PI*2/45)*i;const speed=2+Math.random()*4;particles.push({x:bx,y:by,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,alpha:1,color,size:3+Math.random()*3});}
+  },b*350);
+  let frame=0;
+  function animate(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.08;p.alpha-=0.011;ctx.globalAlpha=Math.max(0,p.alpha);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();});
+    ctx.globalAlpha=1; frame++;
+    if(frame<220) requestAnimationFrame(animate); else canvas.style.display='none';
+  }
+  animate();
+}
+function showCh3Ending1() { document.getElementById('ch3CompleteBanner').style.display='none'; startEndingBgm(); document.getElementById('ch3Ending1').style.display='flex'; }
+function showCh3Ending2() { document.getElementById('ch3Ending1').style.display='none'; document.getElementById('ch3Ending2').style.display='flex'; }
+function endingFinish() {
+  document.getElementById('ch3Ending2').style.display='none';
+  localStorage.setItem('endingUnlocked','true');
+  updateStartScreen(); goHome();
+}
+function startEndingBgm() {
+  if(endingBgmInterval) return;
+  function playLoop(){
+    try{
+      const ctx=getAudioCtx(); const notes=[392,440,494,523,494,440,392,349,392,440,494,523];
+      let t=ctx.currentTime+0.05;
+      notes.forEach(freq=>{const osc=ctx.createOscillator();const gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.type='sine';osc.frequency.value=freq;gain.gain.setValueAtTime(0.1,t);gain.gain.exponentialRampToValueAtTime(0.001,t+0.35);osc.start(t);osc.stop(t+0.38);t+=0.32;});
+    }catch(e){}
+  }
+  playLoop(); endingBgmInterval=setInterval(playLoop,3900);
+}
+function stopEndingBgm() { if(endingBgmInterval){clearInterval(endingBgmInterval);endingBgmInterval=null;} }
 
 function showCh2Complete() {
   const banner = document.getElementById('ch2CompleteBanner');
