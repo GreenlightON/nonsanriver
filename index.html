@@ -2864,14 +2864,13 @@ function buildCardGame(cfg) {
   // 라운드별 열 수: 1라운드=3열, 2라운드=4열, 3라운드=3열, 4~6라운드=4열
   const cols = cfg.cards <= 6 ? 3 : cfg.cards === 8 ? 4 : cfg.cards === 12 ? 3 : 4;
 
-  // 카드 크기: 화면 너비 기준으로 동적 계산
+  // 카드 크기: 화면 너비 기준으로만 계산 (모바일에서 열 수 보장)
   const container = document.getElementById('gameContainer');
-  const availW = Math.min(container.offsetWidth, container.offsetHeight) * 0.95;
+  const availW = container.offsetWidth * 0.92;
   const gap = 8;
-  const cardSize = Math.floor((availW - gap * (cols + 1)) / cols);
-  const cardW = Math.min(cardSize, 90);
-  const cardH = Math.round(cardW * 1.2);
-  const fontSize = Math.round(cardW * 0.55);
+  const cardW = Math.min(Math.floor((availW - gap * (cols - 1)) / cols), 100);
+  const cardH = Math.round(cardW * 1.25);
+  const fontSize = Math.round(cardW * 0.52);
 
   area.style.cssText = `
     position:absolute;top:50%;left:50%;
@@ -3339,17 +3338,100 @@ function endingFinish() {
   updateStartScreen(); goHome();
 }
 function startEndingBgm() {
-  if(endingBgmInterval) return;
-  function playLoop(){
-    try{
-      const ctx=getAudioCtx(); const notes=[392,440,494,523,494,440,392,349,392,440,494,523];
-      let t=ctx.currentTime+0.05;
-      notes.forEach(freq=>{const osc=ctx.createOscillator();const gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.type='sine';osc.frequency.value=freq;gain.gain.setValueAtTime(0.1,t);gain.gain.exponentialRampToValueAtTime(0.001,t+0.35);osc.start(t);osc.stop(t+0.38);t+=0.32;});
-    }catch(e){}
+  if (endingBgmInterval) return;
+  // 잔잔한 강가 분위기 - 3성부 화음 + 아르페지오
+  const melody = [
+    [523,0.4],[494,0.4],[440,0.4],[494,0.4],
+    [523,0.4],[587,0.4],[659,0.8],
+    [587,0.4],[523,0.4],[494,0.4],[440,0.4],
+    [392,0.4],[440,0.4],[494,0.8],
+    [523,0.4],[587,0.4],[659,0.4],[698,0.4],
+    [784,0.8],[698,0.4],[659,0.4],
+    [587,0.4],[523,0.4],[494,0.4],[440,0.4],
+    [523,1.2]
+  ];
+  const harmony = [
+    [330,0.8],[330,0.8],[349,0.8],[330,0.8],
+    [294,0.8],[294,0.8],[330,1.6],
+    [294,0.8],[294,0.8],[262,0.8],[262,0.8],
+    [247,1.6],[262,1.6],
+    [330,0.8],[349,0.8],[392,0.8],[440,0.8],
+    [494,1.6],[440,0.8],[392,0.8],
+    [349,0.8],[330,0.8],[294,0.8],[262,0.8],
+    [330,2.4]
+  ];
+  const bass = [
+    [131,1.6],[165,1.6],[175,1.6],[165,1.6],
+    [131,1.6],[147,1.6],[165,3.2],
+    [147,1.6],[131,1.6],[131,1.6],[110,1.6],
+    [98,3.2],[131,3.2],
+    [131,1.6],[175,1.6],[196,1.6],[220,1.6],
+    [247,3.2],[220,1.6],[196,1.6],
+    [175,1.6],[165,1.6],[147,1.6],[131,1.6],
+    [131,4.8]
+  ];
+
+  const totalDur = melody.reduce((s,[,d])=>s+d,0);
+
+  function playLoop() {
+    try {
+      const ctx = getAudioCtx();
+      let t = ctx.currentTime + 0.1;
+
+      // 멜로디 (맑은 사인파)
+      melody.forEach(([freq, dur]) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.18, t + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.92);
+        osc.start(t); osc.stop(t + dur);
+        t += dur;
+      });
+
+      // 화음 (부드러운 삼각파)
+      let t2 = ctx.currentTime + 0.1;
+      harmony.forEach(([freq, dur]) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, t2);
+        gain.gain.linearRampToValueAtTime(0.09, t2 + 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, t2 + dur * 0.9);
+        osc.start(t2); osc.stop(t2 + dur);
+        t2 += dur;
+      });
+
+      // 베이스 (부드러운 사인파)
+      let t3 = ctx.currentTime + 0.1;
+      bass.forEach(([freq, dur]) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, t3);
+        gain.gain.linearRampToValueAtTime(0.07, t3 + 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.001, t3 + dur * 0.85);
+        osc.start(t3); osc.stop(t3 + dur);
+        t3 += dur;
+      });
+
+    } catch(e) {}
   }
-  playLoop(); endingBgmInterval=setInterval(playLoop,3900);
+
+  playLoop();
+  endingBgmInterval = setInterval(playLoop, totalDur * 1000 + 200);
 }
-function stopEndingBgm() { if(endingBgmInterval){clearInterval(endingBgmInterval);endingBgmInterval=null;} }
+
+function stopEndingBgm() {
+  if (endingBgmInterval) { clearInterval(endingBgmInterval); endingBgmInterval = null; }
+}
 
 function showCh2Complete() {
   const banner = document.getElementById('ch2CompleteBanner');
