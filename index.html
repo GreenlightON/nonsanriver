@@ -1716,6 +1716,16 @@
     </div>
 
     <!-- 라운드 성공 팝업 -->
+    <!-- 라운드 실패 팝업 -->
+    <div id="ch3RoundFailPopup" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.55);z-index:600;align-items:center;justify-content:center;">
+      <div style="background:#fdf6e3;border:3px solid #e53935;border-radius:16px;padding:28px 36px;max-width:340px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+        <div style="font-size:36px;margin-bottom:8px;">😢</div>
+        <div id="ch3FailRoundText" style="font-family:'Gaegu',sans-serif;font-size:19px;font-weight:700;color:#1a3a1a;margin-bottom:8px;">1라운드 실패!</div>
+        <p style="font-family:'Gaegu',sans-serif;font-size:13px;color:#555;margin-bottom:18px;">100점에 도달하지 못했어요.<br>다시 도전해보세요!</p>
+        <button onclick="retryCh3Round()" style="background:#5a8c3c;border:none;color:white;font-family:'Gaegu',sans-serif;font-size:15px;padding:10px 28px;border-radius:8px;cursor:pointer;">재도전!</button>
+      </div>
+    </div>
+
     <div id="ch3RoundClearPopup" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.55);z-index:600;align-items:center;justify-content:center;pointer-events:none;">
       <div style="background:linear-gradient(135deg,#f0fce8,#d4f0b8);border:3px solid #5a8c3c;border-radius:16px;padding:24px 48px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:roundPopIn 0.35s cubic-bezier(0.34,1.56,0.64,1);">
         <div style="font-size:32px;margin-bottom:6px;">🎉</div>
@@ -3095,6 +3105,7 @@ const CH3_ROUNDS = [
 ];
 let ch3State = {
   round:1, score:0, running:false, timerId:null, timerBarId:null, timeLeft:30,
+  moleCount:0,
   unlockedAnimals: new Set(JSON.parse(localStorage.getItem('unlockedAnimals')||'[]')),
   ch3Complete: localStorage.getItem('ch3Complete')==='true'
 };
@@ -3139,7 +3150,7 @@ function startCh3Round() {
   document.getElementById('ch3RoundStartPopup').style.display = 'none';
   const cfg = CH3_ROUNDS[ch3State.round-1];
   buildCh3Grid(cfg);
-  ch3State.running = true; ch3State.timeLeft = 30;
+  ch3State.running = true; ch3State.timeLeft = 30; ch3State.moleCount = 0;
   ch3State.timerBarId = setInterval(() => {
     ch3State.timeLeft -= 0.1;
     updateCh3TimerBar();
@@ -3185,11 +3196,12 @@ function spawnAnimal(cfg) {
   if (!avail.length) return;
   const hole = avail[Math.floor(Math.random()*avail.length)];
   const creature = hole.querySelector('.ch3Creature');
-  const isMole = Math.random()<0.45;
+  const isMole = Math.random()<0.45 && !(ch3State.round === 1 && ch3State.moleCount >= 5);
   const animal = ANIMAL_DATA.find(a=>a.id===cfg.target);
   if (isMole) {
     creature.innerHTML = `<img src="images/두더지.png" style="width:82%;object-fit:contain;pointer-events:none;">`;
     creature.dataset.type = 'mole';
+    ch3State.moleCount++;
   } else {
     creature.innerHTML = `<img src="${animal.img}" style="width:82%;object-fit:contain;pointer-events:none;">`;
     creature.dataset.type = 'target';
@@ -3206,7 +3218,12 @@ function onHoleClick(e) {
   const type = creature.dataset.type;
   creature.style.bottom = '-110%';
   if (type==='target') {
-    ch3State.score+=10; playBeep(784,0.1,'sine',0.3); vibrate(40);
+    ch3State.score+=10;
+    // 목표 동물 잡기 성공 효과음 - 상승하는 경쾌한 소리
+    playBeep(523, 0.08, 'sine', 0.3);
+    setTimeout(() => playBeep(659, 0.08, 'sine', 0.3), 80);
+    setTimeout(() => playBeep(784, 0.12, 'sine', 0.35), 160);
+    vibrate(40);
     showHitEffect(hole,'+10','#4caf50');
   } else {
     if (ch3State.score>0) { ch3State.score-=10; }
@@ -3234,7 +3251,16 @@ function showHitEffect(hole, text, color) {
 }
 
 function checkCh3RoundResult() {
-  document.getElementById('ch3Grid').innerHTML='';
+  document.getElementById('ch3Grid').innerHTML = '';
+  // 실패 팝업 표시
+  playFail();
+  vibrate([80, 40, 80]);
+  document.getElementById('ch3FailRoundText').textContent = ch3State.round + '라운드 실패!';
+  document.getElementById('ch3RoundFailPopup').style.display = 'flex';
+}
+
+function retryCh3Round() {
+  document.getElementById('ch3RoundFailPopup').style.display = 'none';
   showCh3RoundStartPopup(ch3State.round);
 }
 
