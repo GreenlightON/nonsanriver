@@ -3285,8 +3285,38 @@ function updateAnimalDocanCount() {
   const el=document.getElementById('animalDocanCount'); if(el)el.textContent=count+'/5';
   const hel=document.getElementById('animalDocanHeaderCount'); if(hel)hel.textContent=count+' / 5';
 }
-function openAnimalDocan() { buildAnimalDocanPages(); document.getElementById('animalDocanOverlay').style.display='flex'; }
-function closeAnimalDocan() { document.getElementById('animalDocanOverlay').style.display='none'; }
+function openAnimalDocan() {
+  buildAnimalDocanPages();
+  document.getElementById('animalDocanOverlay').style.display='flex';
+  // 게임 중이면 일시정지
+  if (ch3State.running) {
+    ch3State.running = false;
+    clearInterval(ch3State.timerId);
+    clearInterval(ch3State.timerBarId);
+    ch3State._paused = true;
+  }
+}
+
+function closeAnimalDocan() {
+  document.getElementById('animalDocanOverlay').style.display='none';
+  // 일시정지 상태였으면 재개
+  if (ch3State._paused) {
+    ch3State._paused = false;
+    ch3State.running = true;
+    const cfg = CH3_ROUNDS[ch3State.round - 1];
+    ch3State.timerBarId = setInterval(() => {
+      ch3State.timeLeft -= 0.1;
+      updateCh3TimerBar();
+      if (ch3State.timeLeft <= 0) {
+        clearInterval(ch3State.timerBarId);
+        clearInterval(ch3State.timerId);
+        ch3State.running = false;
+        setTimeout(() => checkCh3RoundResult(), 300);
+      }
+    }, 100);
+    ch3State.timerId = setInterval(() => spawnAnimal(cfg), cfg.interval);
+  }
+}
 function buildAnimalDocanPages() {
   const c=document.getElementById('animalDocanPages'); c.innerHTML='';
   ANIMAL_DATA.forEach(a=>{
@@ -3308,9 +3338,15 @@ function openAnimalDetail(animalId, source) {
 function closeAnimalDetail() {
   const ov=document.getElementById('animalDetailOverlay');
   const source=ov.dataset.source; ov.style.display='none';
-  if(source==='docan') openAnimalDocan();
-  else if(source==='ch3round') showCh3RoundStartPopup(ch3State.round);
-  else if(source==='ch3last') { ch3State.ch3Complete=true; localStorage.setItem('ch3Complete','true'); updateStartScreen(); showCh3Complete(); }
+  if(source==='docan') {
+    // 도감 목록으로 돌아가기 - 일시정지 유지
+    openAnimalDocan();
+  } else if(source==='ch3round') {
+    showCh3RoundStartPopup(ch3State.round);
+  } else if(source==='ch3last') {
+    ch3State.ch3Complete=true; localStorage.setItem('ch3Complete','true'); updateStartScreen(); showCh3Complete();
+  }
+  // docan이 아닌 경우(게임 진행 중 직접 닫힘) 일시정지 해제는 closeAnimalDocan에서 처리
 }
 function renderAnimalDetail(idx) {
   const a=ANIMAL_DATA[idx]; const unlocked=ch3State.unlockedAnimals.has(a.id);
