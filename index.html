@@ -176,11 +176,10 @@
 
   #titlePanel .subtitle {
     font-family: 'Gaegu', sans-serif;
-    font-size: 12px;
+    font-size: 36px;
     color: #8b6340;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    margin-bottom: 6px;
+    letter-spacing: 6px;
+    margin-bottom: 4px;
   }
 
   #titlePanel h1 {
@@ -3090,11 +3089,11 @@ function showCh2Next() {
 // 챕터3 - 동물 데이터
 // =============================
 const ANIMAL_DATA = [
-  { id:'namsaengyi', name:'남생이',    img:'images/남생이.png',    emoji:'🐢', sci:'Mauremys reevesii',     desc:'...' },
-  { id:'waegari',    name:'왜가리',    img:'images/왜가리.png',    emoji:'🦢', sci:'Ardea cinerea',         desc:'...' },
-  { id:'mudang',     name:'무당개구리',img:'images/무당개구리.png',emoji:'🐸', sci:'Bombina orientalis',    desc:'...' },
-  { id:'cheongdung', name:'청둥오리',  img:'images/청둥오리.png',  emoji:'🦆', sci:'Anas platyrhynchos',    desc:'...' },
-  { id:'maengkkongi',name:'맹꽁이',    img:'images/맹꽁이.png',    emoji:'🐸', sci:'Kaloula borealis',      desc:'...' }
+  { id:'namsaengyi', name:'남생이',    img:'images/남생이사진.jpg',    emoji:'🐢', sci:'Mauremys reevesii',     desc:'멸종위기인 민물거북으로 온순하고 느리다. 제주도와 울릉도를 제외한 전국에 분포한다. 11월부터 4월까지 겨울잠을 자는데 땅 속뿐만 아니라 물 속에서도 겨울잠을 잔다.' },
+  { id:'waegari',    name:'왜가리',    img:'images/왜가리사진.jpg',    emoji:'🦢', sci:'Ardea cinerea',         desc:'우리나라 백로과 조류 중에서 가장 큰 종이다. 머리에서 목까지는 백색이고 눈을 지나는 검은 띠가 있다. 논, 하천, 해안 등에서 개구리, 물고기 등을 잡아먹는다. 높은 나뭇가지에 둥지를 틀고 한배에 3~5개의 알을 낳는다.' },
+  { id:'mudang',     name:'무당개구리',img:'images/무당개구리사진.jpg',emoji:'🐸', sci:'Bombina orientalis',    desc:'개체에 따라 몸색깔이 다양하게 나타난다. 배쪽은 붉은색에 검은 반점이 있어 다른 개구리와 구분이 쉽다. 둥글고 작은 돌기가 등과 다리에 촘촘하게 있다. 위협을 받으면 피부에서 독성물질이 분비된다.' },
+  { id:'cheongdung', name:'청둥오리',  img:'images/청둥오리사진.jpg',  emoji:'🦆', sci:'Anas platyrhynchos',    desc:'우리나라에 서식하는 오리중 가장 흔하게 관찰되는 종으로 겨울철새이자 텃새이다. 수컷의 머리는 짙은 녹색에 금속광택을 띈다. 낮에는 물이나 모래톱에서 먹이활동 및 휴식을 하고 해질녘에는 농경지로 이동해 낱알을 먹는다.' },
+  { id:'maengkkongi',name:'맹꽁이',    img:'images/맹꽁이사진.jpg',    emoji:'🐸', sci:'Kaloula borealis',      desc:'\'맹꽁 맹꽁\' 하고 울어서 맹꽁이로 이름 지어졌다. 몸통이 둥글고 통통하며 아래턱에 울음주머니가 있다. 여름철 장마철에 웅덩이가 고이면 번식을 한다.' }
 ];
 const CH3_ROUNDS = [
   { round:1, target:'namsaengyi', cols:3, rows:3, interval:1800 },
@@ -3139,7 +3138,7 @@ function showCh3RoundStartPopup(roundNum) {
   document.getElementById('ch3RoundStartIcon').textContent = animal.emoji;
   document.getElementById('ch3TargetName').textContent = animal.name;
   document.getElementById('ch3RoundStartPopup').style.display = 'flex';
-  document.getElementById('ch3TargetHint').textContent = '👆 '+animal.name+'을(를) 잡으세요! 두더지는 피하세요!';
+  document.getElementById('ch3TargetHint').textContent = '👆 '+animal.name+'를 잡으세요! 두더지는 피하세요!';
   ch3State.score = 0;
   document.getElementById('ch3ScoreLabel').textContent = '0';
   document.getElementById('ch3ScoreLabel').style.color = '';
