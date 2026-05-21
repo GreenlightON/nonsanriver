@@ -2048,6 +2048,7 @@ function enterChapter1() {
   }
   setStatus('미끼를 선택하고 강물을 터치해 캐스팅하세요!');
   drawRodLine(null, null);
+  if (localStorage.getItem('endingUnlocked') === 'true') startEndingBgm();
   // 진입 안내 팝업
   const popup = document.getElementById('ch1IntroPopup');
   popup.style.display = 'flex';
@@ -2822,6 +2823,7 @@ function enterChapter2() {
   showScreen('chapter2Screen');
   updatePlantDocanCount();
   startRound(state.currentRound);
+  if (localStorage.getItem('endingUnlocked') === 'true') startEndingBgm();
   // 진입 안내 팝업
   const popup = document.getElementById('ch2IntroPopup');
   popup.style.display = 'flex';
